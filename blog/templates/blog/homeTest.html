@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>testing</title>
+</head>
+<body>
+<h1> HELLO FROM TOM!(homeTest.html)</h1>
+<!--this is a for loop for dummy data-->
+    {% for post in posts %}
+        <h1>{{ post.title }}</h1> <!--We can use a '.' on a Dictionary-->
+        <p>By {{ post.author }} on {{ post.date_posted  }}</p>
+        <p>{{ post.content }}</p>
+    {% endfor %}
+</body>
+</html>

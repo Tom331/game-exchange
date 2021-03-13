@@ -25,15 +25,16 @@ SECRET_KEY = 'exhlfdat&vfum(-34*c2uroi(($ww(yo$9pv98=e6p^gl(-eoj'
 #SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = (os.environ.get('DEBUG_VALUE') == 'True')
+#DEBUG = (os.environ.get('DEBUG_VALUE') == 'True')
+DEBUG = 'TRUE'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1']
 
 
 # Application definition
-
+# Allows Django to look for models (for Databases)
 INSTALLED_APPS = [
-    'blog.apps.BlogConfig',
+    'blog.apps.BlogConfig', #allows Django to correctly search your templates for the 'blog' app
     'users.apps.UsersConfig',
     'crispy_forms',
     'django.contrib.admin',

@@ -1,3 +1,7 @@
+# Best way to load in a template is to use django.shortcuts import render
+# This allows us to return a rendered template. render() takes the request object as 1st param
+# The 2nd param is the template name we want to render, eg) "blog/home.html"
+# The 3rd optional param is context, a way to pass info into our template
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
@@ -10,10 +14,27 @@ from django.views.generic import (
 )
 from .models import Post
 
+# Dummy Data(Dictionary)
+posts = [
+    {
+        'author': 'CoreyMS',
+        'title': 'Blog Post 1',
+        'content': '1st post content',
+        'date_posted': 'August 27, 2018'
+    },
+{
+        'author': 'Jane Doe',
+        'title': 'Blog Post 2',
+        'content': '2nd  post content',
+        'date_posted': 'March 13, 2021(today)'
+    }
+]
 
 def home(request):
+    # This is a "Dictionary"
     context = {
-        'posts': Post.objects.all()
+        'posts': Post.objects.all() #takes actual data from DB
+        #'posts': posts #takes dummy data
     }
     return render(request, 'blog/home.html', context)
 
