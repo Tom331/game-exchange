@@ -39,7 +39,9 @@ class GameListView(ListView):
     games = Game_c.objects.raw('''SELECT name as name, platform__c as platform
                           FROM salesforce.game__c''')
     print('about to print games...')
-    print(games)
+    for game in games:
+        print(game.name)
+        print(game.platform)
     template_name = 'blog/home.html'  # <app>/<model>_<viewtype>.html
     context_object_name = 'games' #posts for simplicity for now
 
