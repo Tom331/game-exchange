@@ -33,15 +33,15 @@ posts = [
 def home(request):
     # This is a "Dictionary"
     context = {
-        #'posts': Post.objects.all() #takes actual data from DB
-        'posts': posts #takes dummy data
+        'posts': Post.objects.all() #takes actual data from DB
+        #'posts': posts #takes dummy data
     }
-    return render(request, 'blog/homeTest.html', context)
+    return render(request, 'blog/home.html', context)
 
 
 class PostListView(ListView):
     model = Post
-    template_name = 'blog/homeTest.html'  # <app>/<model>_<viewtype>.html
+    template_name = 'blog/home.html'  # <app>/<model>_<viewtype>.html
     context_object_name = 'posts'
     ordering = ['-date_posted']
     paginate_by = 5
