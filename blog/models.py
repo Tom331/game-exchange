@@ -23,8 +23,9 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('post-detail', kwargs={'pk': self.pk})
 
-class account(models.Model):
+class Game_c(models.Model):
     name = models.TextField() # Unrestricted text
+    platform = models.CharField(max_length=100) # character field
 
     def __str__(self):
         return self.name # return game name when game.objects.all() is called

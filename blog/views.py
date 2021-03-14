@@ -13,7 +13,7 @@ from django.views.generic import (
     DeleteView
 )
 from .models import Post #import the Post object ('.' because in same directory)
-from .models import account
+from .models import Game_c
 from django.db import connection
 
 def home(request):
@@ -34,7 +34,10 @@ class PostListView(ListView):
 
 
 class GameListView(ListView):
-    model = account
+    model = Game_c
+    # perform raw query to games__c from salesforce
+    Game_c.objects.raw('''SELECT name as name, platform__c as platform
+                          FROM salesforce.game__c''')
     template_name = 'blog/home.html'  # <app>/<model>_<viewtype>.html
     context_object_name = 'games' #posts for simplicity for now
 
