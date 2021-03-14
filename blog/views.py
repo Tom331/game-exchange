@@ -36,8 +36,10 @@ class PostListView(ListView):
 class GameListView(ListView):
     model = Game_c
     # perform raw query to games__c from salesforce
-    Game_c.objects.raw('''SELECT name as name, platform__c as platform
+    games = Game_c.objects.raw('''SELECT name as name, platform__c as platform
                           FROM salesforce.game__c''')
+    print('about to print games...')
+    print(games)
     template_name = 'blog/home.html'  # <app>/<model>_<viewtype>.html
     context_object_name = 'games' #posts for simplicity for now
 
