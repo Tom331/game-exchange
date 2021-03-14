@@ -13,6 +13,7 @@ from django.views.generic import (
     DeleteView
 )
 from .models import Post #import the Post object ('.' because in same directory)
+from .models import game
 from django.db import connection
 
 def home(request):
@@ -30,6 +31,12 @@ class PostListView(ListView):
     context_object_name = 'posts'
     ordering = ['-date_posted']
     paginate_by = 5
+
+
+class GameListView(ListView):
+    model = game
+    template_name = 'blog/home.html'  # <app>/<model>_<viewtype>.html
+    context_object_name = 'games' #posts for simplicity for now
 
 
 class UserPostListView(ListView):

@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (
     PostListView,
+    GameListView,
     PostDetailView,
     PostCreateView,
     PostUpdateView,
@@ -11,7 +12,7 @@ from . import views
 
 urlpatterns = [
     #the 'name' param can be referenced in html. eg) href="{% url 'blog-home' %}". This allows us to avoid hard-coding
-    path('', PostListView.as_view(), name='blog-home'),
+    path('', GameListView.as_view(), name='blog-home'),
     path('user/<str:username>', UserPostListView.as_view(), name='user-posts'),
     path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
     path('post/new/', PostCreateView.as_view(), name='post-create'),
