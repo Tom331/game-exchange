@@ -36,7 +36,7 @@ class PostListView(ListView):
 class GameListView(ListView):
     model = Game_c
     # perform raw query to games__c from salesforce
-    games = Game_c.objects.raw('''SELECT name as name, platform__c as platform
+    games = Game_c.objects.raw('''SELECT id as id, name as name, platform__c as platform
                           FROM salesforce.game__c''')
     print('about to print games...')
     for game in games:
