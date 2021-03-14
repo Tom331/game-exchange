@@ -13,7 +13,7 @@ from django.views.generic import (
     DeleteView
 )
 from .models import Post #import the Post object ('.' because in same directory)
-from .models import salesforce.account
+from .models import account
 from django.db import connection
 
 def home(request):
@@ -34,7 +34,7 @@ class PostListView(ListView):
 
 
 class GameListView(ListView):
-    model = salesforce.account
+    model = account
     template_name = 'blog/home.html'  # <app>/<model>_<viewtype>.html
     context_object_name = 'games' #posts for simplicity for now
 
