@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'exhlfdat&vfum(-34*c2uroi(($ww(yo$9pv98=e6p^gl(-eoj'
+SECRET_KEY = 'exhlfdat&vfum(-34*c2uroi(($ww(yo$9pv98=e6p^gl(-eoj' #todo: test removing this in own deployment
 #SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -77,15 +77,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'django_project.wsgi.application'
 
 
-# Database
+# Database setting:
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 # This seems to be overwritten by the config var in Heroku
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+# DATABASES = { # Use this to use local test DB
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
+# Use Postgrest Database in Shrouded-Inlet
+SHROUDED_INLET_DB = os.environ['DATABASE_URL']
+DATABASE_URL = SHROUDED_INLET_DB
 
 
 # Password validation

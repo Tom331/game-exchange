@@ -11,24 +11,19 @@
 </span>
 <br /> <br /> <br />
 <h4>Recent Proposed Trades</h4>
-<!--    {% for post in posts %}-->
-<!--        &lt;!&ndash;This is the default html for an article from Bootstrap&ndash;&gt;-->
-<!--        <article class="media content-section">-->
-<!--          <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">-->
-<!--          <div class="media-body">-->
-<!--            <div class="article-metadata">-->
-<!--              <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>-->
-<!--                <small class="text-muted"><b>Created:</b> {{ post.date_posted|date:"M j, Y - gA" }} UTC</small>-->
-<!--&lt;!&ndash;                <small class="text-muted"><b>Last Modified:</b> {{ post.last_modified|date:"M j, Y - gA" }} UTC</small>&ndash;&gt;-->
-<!--            </div>-->
-<!--            <h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>-->
-<!--            <p class="article-content">{{ post.content }}</p>-->
-<!--          </div>-->
-<!--        </article>-->
-<!--    {% endfor %}-->
     {% for game in games %}
-    <div>Game: {{ game.name }} </div> <br />
+        <article class="media content-section">
+          <div class="media-body">
+            <div class="article-metadata">
+                <small style="padding-right: 10px" class="text-muted"><b>Created By:</b> {{ game.author.username }}</small>
+                <small class="text-muted"><b>Created:</b> {{ game.created_date|date:"M j, Y - gA" }} UTC</small>
+            </div>
+            <h3><a class="article-title" href="{% url 'blog-home' }">{{ game.name }}</a></h3>
+            <p class="article-content">Platform: {{ game.platform }}</p>
+          </div>
+        </article>
     {% endfor %}
+
     {% if is_paginated %}
 
       {% if page_obj.has_previous %}

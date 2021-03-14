@@ -16,13 +16,12 @@ from .models import Post #import the Post object ('.' because in same directory)
 from .models import Game_c
 from django.db import connection
 
-def home(request):
-    print('Database name: ' + connection.settings_dict['NAME']) # todo: remove
-    # This is a "Dictionary"
-    context = {
-        'posts': Post.objects.all() # takes actual data from DB
-    }
-    return render(request, 'blog/home.html', context)
+# def home(request):
+#     # This is a "Dictionary"
+#     context = {
+#         'posts': Post.objects.all() # takes actual data from DB
+#     }
+#     return render(request, 'blog/home.html', context)
 
 
 class PostListView(ListView):
@@ -35,15 +34,17 @@ class PostListView(ListView):
 
 class GameListView(ListView):
     model = Game_c
-    # perform raw query to games__c from salesforce
-    games = Game_c.objects.raw('''SELECT id as id, name as name, platform__c as platform
-                          FROM salesforce.game__c''')
-    print('about to print games...')
-    for game in games:
-        print(game.name)
-        print(game.platform)
     template_name = 'blog/home.html'  # <app>/<model>_<viewtype>.html
-    context_object_name = 'games' #posts for simplicity for now
+    context_object_name = 'games'
+    paginate_by = 5
+
+    def get_queryset(self):
+        # perform raw query to games__c from salesforce
+        games = Game_c.objects.all()
+        print('about to print games...')
+        for game in games:
+            print('Name: ' + game.name + '; Platform: ' + game.platform)
+        return games
 
 
 class UserPostListView(ListView):
