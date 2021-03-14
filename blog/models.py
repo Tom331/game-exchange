@@ -23,7 +23,7 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('post-detail', kwargs={'pk': self.pk})
 
-class account(models.Model):
+class salesforce.account(models.Model):
     name = models.TextField() # Unrestricted text
 
     def __str__(self):
