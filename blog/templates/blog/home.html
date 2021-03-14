@@ -1,6 +1,14 @@
 {% extends "blog/base.html" %}
 {% block content %}
-<h1> HELLOW FRROM TOM! (home.html)</h1>
+<h1>Welcome to Game Exchange!</h1>
+<br /> <br />
+<h4>What is Game Exchange?</h4>
+<p>Game exchange automatically sets up a trade for you with nearby gamers who own the game you want, and want the game you own.</p>
+<br />
+<span>
+    <button style="margin-left: 20%; padding: 10px 30px 10px 30px" class="btn btn-outline-info">Sign In</button>
+    <button style="margin-left: 20%; padding: 10px 30px 10px 30px" class="btn btn-outline-info">Sign Up</button>
+</span>
     {% for post in posts %}
         <article class="media content-section">
           <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">
