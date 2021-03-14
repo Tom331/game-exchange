@@ -12,16 +12,16 @@
     <link rel="stylesheet" type="text/css" href="{% static 'blog/main.css' %}">
 
     {% if title %}
-        <title>GameExchange.ca - {{ title }}</title>
+        <title>Game Exchange - {{ title }}</title>
     {% else %}
-        <title>GameExchange.ca</title>
+        <title>Game Exchange</title>
     {% endif %}
 </head>
 <body>
     <header class="site-header">
       <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
         <div class="container">
-          <a class="navbar-brand mr-4" href="{% url 'blog-home' %}">GameExchange.ca</a>
+          <a class="navbar-brand mr-4" href="{% url 'blog-home' %}">Game Exchange</a> <!--blog-home is the name we gave to our url pattern. It gets the absolute path-->
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
           </button>
@@ -29,6 +29,7 @@
             <div class="navbar-nav mr-auto">
               <a class="nav-item nav-link" href="{% url 'blog-home' %}">Home</a>
               <a class="nav-item nav-link" href="{% url 'blog-about' %}">About</a>
+              <a class="nav-item nav-link" href="{% url 'blog-about' %}">FAQ</a>
               <a class="nav-item nav-link" href="{% url 'blog-about' %}">Search Proprosed Trades</a>
             </div>
             <!-- Navbar Right Side -->

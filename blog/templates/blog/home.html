@@ -9,13 +9,17 @@
     <button style="margin-left: 20%; padding: 10px 30px 10px 30px" class="btn btn-outline-info">Sign In</button>
     <button style="margin-left: 20%; padding: 10px 30px 10px 30px" class="btn btn-outline-info">Sign Up</button>
 </span>
+<br /> <br /> <br />
+<h4>Recent Proposed Trades</h4>
     {% for post in posts %}
+        <!--This is the default html for an article from Bootstrap-->
         <article class="media content-section">
           <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">
           <div class="media-body">
             <div class="article-metadata">
               <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
-              <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
+                <small class="text-muted"><b>Created:</b> {{ post.date_posted|date:"M j, Y - gA" }} UTC</small>
+<!--                <small class="text-muted"><b>Last Modified:</b> {{ post.last_modified|date:"M j, Y - gA" }} UTC</small>-->
             </div>
             <h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>
             <p class="article-content">{{ post.content }}</p>

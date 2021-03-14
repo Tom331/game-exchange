@@ -12,29 +12,14 @@ from django.views.generic import (
     UpdateView,
     DeleteView
 )
-from .models import Post
-
-# Dummy Data(Dictionary)
-posts = [
-    {
-        'author': 'CoreyMS',
-        'title': 'Blog Post 1',
-        'content': '1st post content',
-        'date_posted': 'August 27, 2018'
-    },
-{
-        'author': 'Jane Doe',
-        'title': 'Blog Post 2',
-        'content': '2nd  post content',
-        'date_posted': 'March 13, 2021(today)'
-    }
-]
+from .models import Post #import the Post object ('.' because in same directory)
+from django.db import connection
 
 def home(request):
+    print('Database name: ' + connection.settings_dict['NAME']) # todo: remove
     # This is a "Dictionary"
     context = {
-        'posts': Post.objects.all() #takes actual data from DB
-        #'posts': posts #takes dummy data
+        'posts': Post.objects.all() # takes actual data from DB
     }
     return render(request, 'blog/home.html', context)
 
