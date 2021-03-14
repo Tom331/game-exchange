@@ -23,7 +23,7 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('post-detail', kwargs={'pk': self.pk})
 
-class game(models.Model):
+class Game__c(models.Model):
     name = models.TextField() # Unrestricted text
 
     def __str__(self):

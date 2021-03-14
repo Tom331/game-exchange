@@ -13,7 +13,7 @@ from django.views.generic import (
     DeleteView
 )
 from .models import Post #import the Post object ('.' because in same directory)
-from .models import game
+from .models import Game__c
 from django.db import connection
 
 def home(request):
@@ -34,7 +34,7 @@ class PostListView(ListView):
 
 
 class GameListView(ListView):
-    model = game
+    model = Game__c
     template_name = 'blog/home.html'  # <app>/<model>_<viewtype>.html
     context_object_name = 'games' #posts for simplicity for now
 
