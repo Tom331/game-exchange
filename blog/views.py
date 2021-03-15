@@ -13,7 +13,7 @@ from django.views.generic import (
     DeleteView
 )
 from .models import Post #import the Post object ('.' because in same directory)
-from .models import Game_c
+from .models import Game
 from django.db import connection
 
 # def home(request):
@@ -26,24 +26,21 @@ from django.db import connection
 
 class PostListView(ListView):
     model = Post
-    template_name = 'blog/home.html'  # <app>/<model>_<viewtype>.html
+    template_name = 'blog/home.html'
     context_object_name = 'posts'
     ordering = ['-date_posted']
     paginate_by = 5
 
 
 class GameListView(ListView):
-    model = Game_c
-    template_name = 'blog/home.html'  # <app>/<model>_<viewtype>.html
+    model = Game
+    template_name = 'blog/home.html' # <app>/<model>_<viewtype>.html
     context_object_name = 'games'
     paginate_by = 5
 
     def get_queryset(self):
-        # perform raw query to games__c from salesforce
-        games = Game_c.objects.all()
+        games = Game.objects.all() # get all OwnedGame records
         print('about to print games...')
-        for game in games:
-            print('Name: ' + game.name + '; Platform: ' + game.platform)
         return games
 
 
