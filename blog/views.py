@@ -13,15 +13,13 @@ from django.views.generic import (
     DeleteView
 )
 from .models import Post #import the Post object ('.' because in same directory)
-from .models import Game
+from .models import Trade, Transaction
 from django.db import connection
+from django.db.models import Q
 
-# def home(request):
-#     # This is a "Dictionary"
-#     context = {
-#         'posts': Post.objects.all() # takes actual data from DB
-#     }
-#     return render(request, 'blog/home.html', context)
+
+def home(request):
+    return render(request, 'blog/home.html')
 
 
 class PostListView(ListView):
@@ -32,16 +30,20 @@ class PostListView(ListView):
     paginate_by = 5
 
 
-class GameListView(ListView):
-    model = Game
-    template_name = 'blog/home.html' # <app>/<model>_<viewtype>.html
-    context_object_name = 'games'
+class TradeListView(ListView):
+    model = Trade
+    template_name = 'blog/matches.html' # <app>/<model>_<viewtype>.html
+    context_object_name = 'trades'
     paginate_by = 5
 
     def get_queryset(self):
-        games = Game.objects.all() # get all OwnedGame records
-        print('about to print games...')
-        return games
+        current_user = self.request.user # todo: move where needed
+        # Get trades
+        # trades = Trade.objects.filter(Q(is_trade_proposed='False', user_who_posted=current_user))
+        trades = Trade.objects.select_related('owned_game', 'desired_game')
+        print('resulting query:')
+        print(Trade.objects.select_related('owned_game', 'desired_game').query)
+        return trades
 
 
 class UserPostListView(ListView):

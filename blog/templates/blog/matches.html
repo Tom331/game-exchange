@@ -1,0 +1,43 @@
+{% extends "blog/base.html" %}
+{% block content %}
+<h1>Matches</h1>
+<br />
+
+<h5>These proposed trades by other users match the trades you submitted</h5>
+<br />
+    {% for trade in trades %}
+        <article class="media content-section">
+          <div class="media-body">
+            <div class="article-metadata">
+                <small style="padding-right: 10px" class="text-muted"><b>Created By:</b> {{ trade.user_who_posted.username }}</small>
+                <small class="text-muted"><b>Created:</b> {{ trade.created_date|date:"M j, Y - gA" }} UTC</small>
+            </div>
+            <span class="article-content"><a href="{% url 'blog-home' }">{{ trade.user_who_posted.username }}</a> wants to trade their copy of <b>{{ trade.owned_game.name }}</b> for your copy of <b>{{ trade.desired_game.name }}</b></span>
+            <p class="article-content">Platform: {{ trade.owned_game.platform }}</p>
+             <button style="padding: 5px 15px 5px 15px" class="btn btn-outline-info">Set up a trade</button>
+          </div>
+        </article>
+    {% endfor %}
+
+    {% if is_paginated %}
+
+      {% if page_obj.has_previous %}
+        <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">Next</a>
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+      {% endif %}
+
+    {% endif %}
+{% endblock content %}

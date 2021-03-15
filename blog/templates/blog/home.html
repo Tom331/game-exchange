@@ -6,7 +6,7 @@
 <p>Game exchange automatically sets up a trade for you with nearby gamers who own the game you want, and want the game you own.</p>
 <br />
 
-<img src="/media/meme.jpg" width="80%">
+<img src="/media/meme2.jpg" width="80%">
 <br /> <br />
 
 <h4>How does it work?</h4>
@@ -17,7 +17,7 @@
         <li>Enter the title of the game you want to receive in exchange for the game you own</li>
     </ol>
     Once you submit your proposed trade, Game Exchange will look for a proposed trade by another gamer who wants the game you own, and owns the game you want.
-    If there is a match for your proposed trade, it will show up in the "Your Matches" tab. If you signed up for notifications, you will also receive an email
+    If there is a match, it will show up on the "Matches" page. If you <a href="#">signed up for notifications</a>, you will also receive an email
     within minutes that a match has been found so you can get in contact with the other gamer right away.
 </p>
 
@@ -26,39 +26,4 @@
     <button style="margin-left: 20%; padding: 10px 30px 10px 30px" class="btn btn-outline-info">Sign Up</button>
 </span>
 <br /> <br /> <br />
-<h4>Recent Proposed Trades</h4>
-    {% for game in games %}
-        <article class="media content-section">
-          <div class="media-body">
-            <div class="article-metadata">
-                <small style="padding-right: 10px" class="text-muted"><b>Created By:</b> {{ game.author.username }}</small>
-                <small class="text-muted"><b>Created:</b> {{ game.created_date|date:"M j, Y - gA" }} UTC</small>
-            </div>
-            <h3><a class="article-title" href="{% url 'blog-home' }">{{ game.name }}</a></h3>
-            <p class="article-content">Platform: {{ game.platform }}</p>
-          </div>
-        </article>
-    {% endfor %}
-
-    {% if is_paginated %}
-
-      {% if page_obj.has_previous %}
-        <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
-        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-      {% endif %}
-
-      {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-          <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-          <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
-        {% endif %}
-      {% endfor %}
-
-      {% if page_obj.has_next %}
-        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">Next</a>
-        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-      {% endif %}
-
-    {% endif %}
 {% endblock content %}

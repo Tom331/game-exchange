@@ -30,18 +30,19 @@
               <a class="nav-item nav-link" href="{% url 'blog-home' %}">Home</a>
               <a class="nav-item nav-link" href="{% url 'blog-about' %}">About</a>
               <a class="nav-item nav-link" href="{% url 'blog-about' %}">FAQ</a>
-              <a class="nav-item nav-link" href="{% url 'blog-about' %}">Search Proposed Trades</a>
+<!--              <a class="nav-item nav-link" href="{% url 'blog-about' %}">Search Proposed Trades</a>-->
             </div>
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
               {% if user.is_authenticated %}
-                <a class="nav-item nav-link" href="{% url 'post-create' %}">Your Matches</a>
+                <a class="nav-item nav-link" href="{% url 'post-create' %}">Active Trades</a>
+                <a class="nav-item nav-link" href="{% url 'blog-matches' %}">Matches</a>
                 <a class="nav-item nav-link" href="{% url 'post-create' %}">Propose New Trade</a>
                 <a class="nav-item nav-link" href="{% url 'profile' %}">Profile</a>
                 <a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a>
               {% else %}
-                <a class="nav-item nav-link" href="{% url 'login' %}">Login</a>
-                <a class="nav-item nav-link" href="{% url 'register' %}">Register</a>
+                <a class="nav-item nav-link" href="{% url 'login' %}"><b>Login</b></a>
+                <a class="nav-item nav-link" href="{% url 'register' %}"><b>Register</b></a>
               {% endif %}
             </div>
           </div>
