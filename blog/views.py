@@ -37,12 +37,18 @@ class TradeListView(ListView):
     paginate_by = 5
 
     def get_queryset(self):
-        current_user = self.request.user # todo: move where needed
-        # Get trades
-        # trades = Trade.objects.filter(Q(is_trade_proposed='False', user_who_posted=current_user))
-        trades = Trade.objects.select_related('owned_game', 'desired_game')
-        print('resulting query:')
-        print(Trade.objects.select_related('owned_game', 'desired_game').query)
+        current_user_id = self.request.user.id
+        # Get trades of other users who match your submitted trades
+        trades = Trade.objects.raw('SELECT DISTINCT t1.id AS id, t2.id AS user2_trade_id, '
+                                   't1.owned_game as game_to_trade, t1.desired_game as game_to_receive, '
+                                   't2.user_who_posted_id as user_to_trade_with '
+                                   'FROM blog_Trade t1, blog_Trade t2 '
+                                   'WHERE t1.owned_game = t2.desired_game '
+                                   'AND t1.desired_game = t2.owned_game '
+                                   'AND t1.user_who_posted_id != %s '
+                                   'AND t1.is_trade_proposed = false '
+                                   'AND t2.is_trade_proposed = false',
+                                   [current_user_id])
         return trades
 
 
