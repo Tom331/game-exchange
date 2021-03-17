@@ -2,10 +2,19 @@
 {% load crispy_forms_tags %}
 {% block content %}
     <div class="content-section">
-        <form method="POST">
-            {% csrf_token %}
+        <form method="POST" action="{% url 'trade-insert' %}">
             <div class="form-group">
                 <legend class="border-bottom mb-4">Propose New Trade</legend>
+
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+
+                {% csrf_token %}
                 {{ form|crispy }}
 
                 {{ form.media }}

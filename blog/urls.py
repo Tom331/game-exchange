@@ -4,7 +4,7 @@ from .views import (
     PostListView,
     TradeListView,
     PostDetailView,
-    TradeCreateView,
+    TradeCreateForm,
     GameAutoComplete,
     PostUpdateView,
     PostDeleteView,
@@ -25,6 +25,7 @@ urlpatterns = [
     path('user/<str:username>', UserPostListView.as_view(), name='user-posts'), # <str:username> captures a string value from the username param in the URL
     path('trade/<int:pk>/', PostDetailView.as_view(), name='blog-matches'),
     path('trade/new/', views.trade_new, name='trade-create'),
+    path('trade/insert/', views.insert_new_trade, name='trade-insert'),
     url(
         r'^game-autocomplete/$',
         GameAutoComplete.as_view(),

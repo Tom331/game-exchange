@@ -17,28 +17,47 @@ from .models import Trade, Game
 from django.db import connection
 from dal import autocomplete
 from django import forms
+from django.contrib import messages
+from django.contrib.messages import constants as message_constants
+from django.db.models import Q
 
 
 def trade_new(request):
     form = TradeCreateForm()
     return render(request, 'blog/trade_form.html', {'form': form, 'title': 'Propose New Trade'})
 
+def insert_new_trade(request):
+    print('~~~insert_new_trade~~~')
+    user_who_posted = request.user
+    if ('the_game_you_own' not in request.POST or 'the_game_you_want_in_exchange' not in request.POST):
+        messages.add_message(request, 30, 'There was a problem with one of the games you entered. Please try a different pair.')
+        return trade_new(request)
+
+    owned_game_id = request.POST['the_game_you_own']
+    desired_game_id = request.POST['the_game_you_want_in_exchange']
+    games = Game.objects.filter(Q(id=owned_game_id) | Q(id=desired_game_id))
+
+    trade = Trade(owned_game=games.filter(id=owned_game_id).first(), desired_game=games.filter(id=desired_game_id).first(), user_who_posted=user_who_posted)
+    trade.save()
+    messages.add_message(request, 25, 'Proposed trade was saved. The "Matches" page will be updated within 1 minute if a match was found.')
+    return trade_new(request)
+
 
 class TradeCreateForm(forms.Form):
     the_game_you_own = forms.ModelChoiceField(
         queryset=Game.objects.all(),
-        to_field_name='name_and_platform',
+        to_field_name='owned',
         widget=autocomplete.ModelSelect2(
             url='game-autocomplete',
             attrs={
-                'data-minimum-input-length': 2,
+                'data-minimum-input-length': 2, #res, sp
             },
         )
     )
 
     the_game_you_want_in_exchange = forms.ModelChoiceField(
         queryset=Game.objects.all(),
-        to_field_name='name_and_platform',
+        to_field_name='desired',
         widget=autocomplete.ModelSelect2(
             url='game-autocomplete',
             attrs={
@@ -46,6 +65,10 @@ class TradeCreateForm(forms.Form):
             },
         )
     )
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
 
 
 class TradeCreateView(LoginRequiredMixin, CreateView):
@@ -58,17 +81,16 @@ class GameAutoComplete(autocomplete.Select2QuerySetView):
         if not self.request.user.is_authenticated:
             return Game.objects.none()
 
-        self.q = (self.q + '%').lower()
+        self.q = ('%' + self.q + '%').lower() # add '%' to complete LIKE clause
         qs = Game.objects.raw('SELECT Id AS id, name_and_platform AS name FROM blog_game WHERE LOWER( name_and_platform ) LIKE %s', [self.q])
         return qs
-
 
 
 def home(request):
     return render(request, 'blog/home.html')
 
 
-class PostListView(ListView):
+class PostListView(ListView): #todo: remove
     model = Post
     template_name = 'blog/home.html'
     context_object_name = 'posts'
@@ -118,9 +140,6 @@ class UserPostListView(ListView):
 
 class PostDetailView(DetailView):
     model = Post
-
-
-
 
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):

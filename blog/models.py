@@ -27,7 +27,7 @@ class Game(models.Model):
     name = models.TextField()  # Unrestricted text
     platform = models.CharField(max_length=100)  # character field
     created_date = models.DateTimeField(default=timezone.now)
-    name_and_platform = models.TextField() #todo: find a good max char limit
+    name_and_platform = models.TextField(default='N/A') #todo: find a good max char limit
 
     # ForeignKey represents a many to one relationship.
     # if user is deleted, all Game records they made are deleted
