@@ -1,9 +1,11 @@
 from django.urls import path
+from django.conf.urls import url
 from .views import (
     PostListView,
     TradeListView,
     PostDetailView,
-    PostCreateView,
+    TradeCreateView,
+    GameAutoComplete,
     PostUpdateView,
     PostDeleteView,
     UserPostListView
@@ -21,8 +23,12 @@ urlpatterns = [
     path('matches/', TradeListView.as_view(), name='blog-matches'),
     # path('', PostListView.as_view(), name='blog-home'), # old home page
     path('user/<str:username>', UserPostListView.as_view(), name='user-posts'), # <str:username> captures a string value from the username param in the URL
-    path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
-    path('post/new/', PostCreateView.as_view(), name='post-create'),
+    path('trade/<int:pk>/', PostDetailView.as_view(), name='blog-matches'),
+    path('trade/new/', views.trade_new, name='trade-create'),
+    url(
+        r'^game-autocomplete/$',
+        GameAutoComplete.as_view(),
+        name='game-autocomplete'),
     path('post/<int:pk>/update/', PostUpdateView.as_view(), name='post-update'),
     path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post-delete'),
     path('about/', views.about, name='blog-about'),

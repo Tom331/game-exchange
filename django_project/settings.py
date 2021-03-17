@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'blog.apps.BlogConfig', #allows Django to correctly search your templates for the 'blog' app
     'users.apps.UsersConfig',
     'crispy_forms',
+    'dal',
+    'dal_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

@@ -13,9 +13,55 @@ from django.views.generic import (
     DeleteView
 )
 from .models import Post #import the Post object ('.' because in same directory)
-from .models import Trade, Transaction
+from .models import Trade, Game
 from django.db import connection
-from django.db.models import Q
+from dal import autocomplete
+from django import forms
+
+
+def trade_new(request):
+    form = TradeCreateForm()
+    return render(request, 'blog/trade_form.html', {'form': form, 'title': 'Propose New Trade'})
+
+
+class TradeCreateForm(forms.Form):
+    the_game_you_own = forms.ModelChoiceField(
+        queryset=Game.objects.all(),
+        to_field_name='name_and_platform',
+        widget=autocomplete.ModelSelect2(
+            url='game-autocomplete',
+            attrs={
+                'data-minimum-input-length': 2,
+            },
+        )
+    )
+
+    the_game_you_want_in_exchange = forms.ModelChoiceField(
+        queryset=Game.objects.all(),
+        to_field_name='name_and_platform',
+        widget=autocomplete.ModelSelect2(
+            url='game-autocomplete',
+            attrs={
+                'data-minimum-input-length': 2,
+            },
+        )
+    )
+
+
+class TradeCreateView(LoginRequiredMixin, CreateView):
+    model = Trade
+    fields = ["owned_game"]
+
+
+class GameAutoComplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Game.objects.none()
+
+        self.q = (self.q + '%').lower()
+        qs = Game.objects.raw('SELECT Id AS id, name_and_platform AS name FROM blog_game WHERE LOWER( name_and_platform ) LIKE %s', [self.q])
+        return qs
+
 
 
 def home(request):
@@ -39,16 +85,23 @@ class TradeListView(ListView):
     def get_queryset(self):
         current_user_id = self.request.user.id
         # Get trades of other users who match your submitted trades
-        trades = Trade.objects.raw('SELECT DISTINCT t1.id AS id, t2.id AS user2_trade_id, '
-                                   't1.owned_game as game_to_trade, t1.desired_game as game_to_receive, '
-                                   't2.user_who_posted_id as user_to_trade_with '
-                                   'FROM blog_Trade t1, blog_Trade t2 '
+        # t1 is the current_user's trade, t2 is the matched trade
+        trades = Trade.objects.raw('SELECT DISTINCT t1.id AS id, ' 
+                                   't2.id AS user2_trade_id, '
+                                   't2.name AS t2_name, ' 
+                                   't1.owned_game as t1_owned_game, '
+                                   't1.desired_game as t1_desired_game, '
+                                   't2.user_who_posted_id as t2_user_who_posted_id, '
+                                   'u1.username as t2username '
+                                   'FROM blog_Trade t1, blog_Trade t2, auth_user u1 '
                                    'WHERE t1.owned_game = t2.desired_game '
                                    'AND t1.desired_game = t2.owned_game '
-                                   'AND t1.user_who_posted_id != %s '
+                                   'AND t1.user_who_posted_id = %s '
                                    'AND t1.is_trade_proposed = false '
-                                   'AND t2.is_trade_proposed = false',
+                                   'AND t2.is_trade_proposed = false '
+                                   'AND u1.id = t2.user_who_posted_id',
                                    [current_user_id])
+
         return trades
 
 
@@ -67,13 +120,7 @@ class PostDetailView(DetailView):
     model = Post
 
 
-class PostCreateView(LoginRequiredMixin, CreateView):
-    model = Post
-    fields = ['title', 'content']
 
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
 
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):

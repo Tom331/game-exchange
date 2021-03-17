@@ -27,6 +27,7 @@ class Game(models.Model):
     name = models.TextField()  # Unrestricted text
     platform = models.CharField(max_length=100)  # character field
     created_date = models.DateTimeField(default=timezone.now)
+    name_and_platform = models.TextField() #todo: find a good max char limit
 
     # ForeignKey represents a many to one relationship.
     # if user is deleted, all Game records they made are deleted
@@ -34,6 +35,15 @@ class Game(models.Model):
 
     def __str__(self):
         return self.name  # return game name when game.objects.all() is called
+
+    def get_name_and_platform(self):
+        return ''.join([self.name, '(', self.platform, ')'])
+
+    def save(self, *args, **kwargs):
+        self.name_and_platform = self.get_name_and_platform()
+        super(Game, self).save(*args, **kwargs)
+
+
 
 
 class Trade(models.Model):
