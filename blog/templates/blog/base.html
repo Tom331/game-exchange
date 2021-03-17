@@ -38,7 +38,7 @@
                 <a class="nav-item nav-link" href="{% url 'blog-matches' %}">Active Trades</a>
                 <a class="nav-item nav-link" href="{% url 'blog-matches' %}">Matches</a>
                 <a class="nav-item nav-link" href="{% url 'trade-create' %}">Propose New Trade</a>
-                <a class="nav-item nav-link" href="{% url 'profile' %}">Profile</a>
+                <a class="nav-item nav-link" href="{% url 'profile' %}">Account</a>
                 <a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a>
               {% else %}
                 <a class="nav-item nav-link" href="{% url 'login' %}"><b>Login</b></a>
@@ -63,11 +63,14 @@
         </div>
         <div class="col-md-4">
           <div class="content-section">
-            <h3>Our Sidebar</h3>
-            <p class='text-muted'>You can put any information here you'd like.
+            <h5>Hi, {username}!</h5>
+            <p class='text-muted'>Your membership type: <b>Premium</b> <br />
+                <a href="#"><u>Click here</u></a> for membership type information
               <ul class="list-group">
-                <li class="list-group-item list-group-item-light">Latest Trade Requests</li>
+<!--                <li class="list-group-item list-group-item-light">Latest Trade Requests</li>-->
                 <li class="list-group-item list-group-item-light">Announcements</li>
+                <li class="list-group-item list-group-item-light">Support</li>
+                <li class="list-group-item list-group-item-light">Report User</li>
               </ul>
             </p>
           </div>
