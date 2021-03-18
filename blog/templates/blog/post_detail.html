@@ -1,0 +1,20 @@
+{% extends "blog/base.html" %}
+{% block content %}
+<!--  <article class="media content-section">-->
+<!--    <img class="rounded-circle article-img" src="{{ game.author.profile.image.url }}">-->
+<!--    <div class="media-body">-->
+<!--      <div class="article-metadata">-->
+<!--        <a class="mr-2" href="{% url 'user-posts' game.author.username %}">{{ game.author }}</a>-->
+<!--        <small class="text-muted">{{ game.created_date|date:"F d, Y" }}</small>-->
+<!--        {% if game.author == user %}-->
+<!--          <div>-->
+<!--            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'post-update' game.id %}">Update</a>-->
+<!--            <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'post-delete' game.id %}">Delete</a>-->
+<!--          </div>-->
+<!--        {% endif %}-->
+<!--      </div>-->
+<!--      <h2 class="article-title">{{ game.name }}</h2>-->
+<!--      <p class="article-content">{{ game.content }}</p>-->
+<!--    </div>-->
+<!--  </article>-->
+{% endblock content %}
