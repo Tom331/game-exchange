@@ -158,3 +158,5 @@ AWS_DEFAULT_ACL = None
 # DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage' #i think this is breaking it
 
 django_heroku.settings(locals())
+
+#DATA_UPLOAD_MAX_NUMBER_FIELDS = 4000
