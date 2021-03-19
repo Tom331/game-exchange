@@ -90,8 +90,8 @@ WSGI_APPLICATION = 'django_project.wsgi.application'
 # }
 
 # Use Postgrest Database in Shrouded-Inlet
-SHROUDED_INLET_DB = os.environ['DATABASE_URL']
-DATABASE_URL = SHROUDED_INLET_DB
+DB_URL = os.environ['DATABASE_URL']
+DATABASE_URL = DB_URL
 
 
 # Password validation

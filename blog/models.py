@@ -62,6 +62,13 @@ class Trade(models.Model):
     # Specify the related_name to avoid the same lookup name (Trade.Game)
     desired_game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='desired_game', db_column='desired_game')
 
+    def get_trade_name(self):
+        return ''.join([self.user_who_posted.username, '(', timezone.now().strftime("%b %d, %Y %H:%M:%S UTC"), ')'])
+
+    def save(self, *args, **kwargs):
+        self.name = self.get_trade_name()
+        super(Trade, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.name # return game name when game.objects.all() is called
 
