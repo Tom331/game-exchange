@@ -90,8 +90,13 @@ WSGI_APPLICATION = 'django_project.wsgi.application'
 # }
 
 # Use Postgrest Database in Shrouded-Inlet
+<<<<<<< HEAD
 SHROUDED_INLET_DB = os.environ['DATABASE_URL']
 DATABASE_URL = SHROUDED_INLET_DB
+=======
+DB_URL = os.environ['DATABASE_URL']
+DATABASE_URL = DB_URL
+>>>>>>> 24b8021952d7f7619d2eb6068075ec7e85fbc366
 
 
 # Password validation
@@ -118,7 +123,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
+<<<<<<< HEAD
 TIME_ZONE = 'UTC'
+=======
+TIME_ZONE = 'America/Los_Angeles'
+>>>>>>> 24b8021952d7f7619d2eb6068075ec7e85fbc366
 
 USE_I18N = True
 
@@ -159,4 +168,8 @@ AWS_DEFAULT_ACL = None
 
 django_heroku.settings(locals())
 
+<<<<<<< HEAD
 #DATA_UPLOAD_MAX_NUMBER_FIELDS = 4000
+=======
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 4000
+>>>>>>> 24b8021952d7f7619d2eb6068075ec7e85fbc366
