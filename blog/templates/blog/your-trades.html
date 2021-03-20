@@ -19,7 +19,7 @@
           <div class="media-body">
             <div class="article-metadata">
                 <small class="text-muted"><b>Created:</b> {{ trade.created_date|date:"M j, Y g:iA" }} PT</small>
-                <small class="text-muted"><b>id:</b> {{ trade.id }}</small>
+                <small class="text-muted"><b>id(REMOVE):</b> {{ trade.id }}</small>
             </div>
               <span class="article-content">You want to trade your copy of </span>
               <span><b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }}) </span>
@@ -30,7 +30,7 @@
 
         <!-- Modal -->
         <div class="modal fade" id="deleteTradeModal-{{trade.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-          <div style="max-width: 45%" class="modal-dialog modal-dialog-centered" role="document">
+          <div style="max-width: 38%" class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLongTitle">Delete this trade?</h5>

@@ -13,7 +13,7 @@ from django.views.generic import (
     DeleteView
 )
 from .models import Post #import the Post object ('.' because in same directory)
-from .models import Trade, Game
+from .models import Trade, Game, Transaction
 from django.db import connection
 from dal import autocomplete
 from django import forms
@@ -120,6 +120,21 @@ class PostListView(ListView): #todo: remove
     paginate_by = 5
 
 
+# ~~~CONFIRM TRADE, CREATE TRANSACTION~~~
+def confirm_trade(request):
+    if 'trade_1_id' not in request.POST or 'trade_2_id' not in request.POST:
+        messages.add_message(request, DANGER, 'There was a problem deleting this trade. Please try again.')
+        return redirect('/your-matches')
+
+    trade_1_id = request.POST['trade_1_id']
+    trade_2_id = request.POST['trade_2_id']
+    transaction = Transaction(trade_one_id=trade_1_id, trade_two_id=trade_2_id)
+    transaction.save()
+    messages.add_message(request, SUCCESS, 'Trade confirmed (keep?)')
+    return redirect('/confirmed-trades') #redirect to newly created transaction record
+
+
+# Matches page
 class TradeListView(ListView):
     model = Trade
     template_name = 'blog/matches.html' # <app>/<model>_<viewtype>.html
@@ -150,6 +165,7 @@ class TradeListView(ListView):
         return trades
 
 
+# Your Trades page
 class YourTradesListView(ListView):
     model = Trade
     template_name = 'blog/your-trades.html'
@@ -159,7 +175,6 @@ class YourTradesListView(ListView):
     def get_queryset(self):
         current_user = self.request.user
         trades = Trade.objects.filter(user_who_posted=current_user)
-
         return trades
 
 

@@ -24,6 +24,7 @@ urlpatterns = [
     path('about/', views.about, name='blog-about'),
     path('matches/', TradeListView.as_view(), name='blog-matches'),
     path('your-trades/', YourTradesListView.as_view(), name='blog-trades'),
+    path('trade/confirm/', views.delete_trade, name='trade-confirm'),
     path('trade/delete/', views.delete_trade, name='trade-delete'),
     # path('', PostListView.as_view(), name='blog-home'), # old home page
     path('trade/<int:pk>/', PostDetailView.as_view(), name='blog-matches'),
