@@ -118,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Los_Angeles'
 
 USE_I18N = True
 
@@ -159,4 +159,4 @@ AWS_DEFAULT_ACL = None
 
 django_heroku.settings(locals())
 
-#DATA_UPLOAD_MAX_NUMBER_FIELDS = 4000
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 4000

@@ -20,14 +20,22 @@ from django import forms
 from django.contrib import messages
 from django.contrib.messages import constants as message_constants
 from django.db.models import Q
+import datetime
+from datetime import datetime
+from django.shortcuts import redirect
+
+# MESSAGE CONSTANTS
+DANGER = 30
+SUCCESS = 25
 
 
+# ~~~CREATE TRADE~~~
 def trade_new(request):
     form = TradeCreateForm()
     return render(request, 'blog/trade_form.html', {'form': form, 'title': 'Propose New Trade'})
 
+
 def insert_new_trade(request):
-    print('~~~insert_new_trade~~~')
     user_who_posted = request.user
     if ('the_game_you_own' not in request.POST or 'the_game_you_want_in_exchange' not in request.POST):
         messages.add_message(request, 30, 'There was a problem with one of the games you entered. Please try a different pair.')
@@ -37,9 +45,10 @@ def insert_new_trade(request):
     desired_game_id = request.POST['the_game_you_want_in_exchange']
     games = Game.objects.filter(Q(id=owned_game_id) | Q(id=desired_game_id))
 
+    #todo: replace with owned_game_id=owned_game_id
     trade = Trade(owned_game=games.filter(id=owned_game_id).first(), desired_game=games.filter(id=desired_game_id).first(), user_who_posted=user_who_posted)
     trade.save()
-    messages.add_message(request, 25, 'Proposed trade was saved. The "Matches" page will be updated within 1 minute if a match was found.')
+    messages.add_message(request, 25, 'Proposed trade was saved. Check your Matches to see if someone wants to do that trade.')
     return trade_new(request)
 
 
@@ -82,10 +91,23 @@ class GameAutoComplete(autocomplete.Select2QuerySetView):
             return Game.objects.none()
 
         self.q = ('%' + self.q + '%').lower() # add '%' to complete LIKE clause
-        qs = Game.objects.raw('SELECT Id AS id, name_and_platform AS name FROM blog_game WHERE LOWER( name_and_platform ) LIKE %s', [self.q])
+        qs = Game.objects.raw('SELECT Id AS id, name_and_platform AS name FROM blog_game WHERE LOWER( name_and_platform ) LIKE %s ORDER BY name_and_platform', [self.q])
         return qs
 
 
+# ~~~DELETE TRADE~~~
+def delete_trade(request):
+    if 'trade_id' not in request.POST:
+        messages.add_message(request, DANGER, 'There was a problem deleting this trade. Please try again.')
+        return redirect('/your-trades')
+    trade_id = request.POST['trade_id']
+    trade = Trade.objects.filter(id=trade_id)
+    trade.delete()
+    messages.add_message(request, SUCCESS, 'Trade deleted')
+    return redirect('/your-trades')
+
+
+# Go to home
 def home(request):
     return render(request, 'blog/home.html')
 
@@ -109,12 +131,13 @@ class TradeListView(ListView):
         # Get trades of other users who match your submitted trades
         # t1 is the current_user's trade, t2 is the matched trade
         trades = Trade.objects.raw('SELECT DISTINCT t1.id AS id, ' 
-                                   't2.id AS user2_trade_id, '
+                                   't2.id AS t2_id, '
                                    't2.name AS t2_name, ' 
                                    't1.owned_game as t1_owned_game, '
                                    't1.desired_game as t1_desired_game, '
                                    't2.user_who_posted_id as t2_user_who_posted_id, '
-                                   'u1.username as t2username '
+                                   't2.created_date as t2_created_date, '
+                                   'u1.username as t2_username ' 
                                    'FROM blog_Trade t1, blog_Trade t2, auth_user u1 '
                                    'WHERE t1.owned_game = t2.desired_game '
                                    'AND t1.desired_game = t2.owned_game '
@@ -123,6 +146,19 @@ class TradeListView(ListView):
                                    'AND t2.is_trade_proposed = false '
                                    'AND u1.id = t2.user_who_posted_id',
                                    [current_user_id])
+
+        return trades
+
+
+class YourTradesListView(ListView):
+    model = Trade
+    template_name = 'blog/your-trades.html'
+    context_object_name = 'trades'
+    paginate_by = 5
+
+    def get_queryset(self):
+        current_user = self.request.user
+        trades = Trade.objects.filter(user_who_posted=current_user)
 
         return trades
 
@@ -168,5 +204,6 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return False
 
 
+# Go to About page
 def about(request):
     return render(request, 'blog/about.html', {'title': 'About'})
