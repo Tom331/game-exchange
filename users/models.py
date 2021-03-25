@@ -1,6 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import User
 from PIL import Image
+from django.contrib.auth import get_user_model
+User = get_user_model()
+from django.conf import settings
+
 
 
 class Profile(models.Model):
@@ -19,3 +22,9 @@ class Profile(models.Model):
     #         output_size = (300, 300)
     #         img.thumbnail(output_size)
     #         img.save(self.image.path)
+
+
+# class CustomUser(User):
+#
+#     class Meta:
+#         proxy = True

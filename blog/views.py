@@ -4,7 +4,11 @@
 # The 3rd optional param is context, a way to pass info into our template
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.models import User
+
+
+from django.contrib.auth import get_user_model
+
+
 from django.views.generic import (
     ListView,
     DetailView,
@@ -23,6 +27,15 @@ from django.db.models import Q
 import datetime
 from datetime import datetime
 from django.shortcuts import redirect
+import time
+from django.http import HttpResponseRedirect
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+
+
+# Transaction statuses
+TRANSACTION_CANCELLED_BY_USER = 'Cancelled: Manually cancelled by ' # user3 on Mar 21, 7:14pm
+TRANSACTION_OPEN = 'Open'
 
 # MESSAGE CONSTANTS
 DANGER = 30
@@ -30,19 +43,32 @@ SUCCESS = 25
 
 
 # ~~~CREATE TRADE~~~
+@login_required
 def trade_new(request):
     form = TradeCreateForm()
     return render(request, 'blog/trade_form.html', {'form': form, 'title': 'Propose New Trade'})
 
 
+@login_required
 def insert_new_trade(request):
-    user_who_posted = request.user
+    user_who_posted = request.user # current user
     if ('the_game_you_own' not in request.POST or 'the_game_you_want_in_exchange' not in request.POST):
         messages.add_message(request, 30, 'There was a problem with one of the games you entered. Please try a different pair.')
         return trade_new(request)
 
     owned_game_id = request.POST['the_game_you_own']
     desired_game_id = request.POST['the_game_you_want_in_exchange']
+
+    if owned_game_id == desired_game_id:
+        messages.add_message(request, 30, 'The games cannot be the same')
+        return trade_new(request)
+
+    trades_with_desired_game = Trade.objects.filter(owned_game_id=desired_game_id, user_who_posted=user_who_posted)
+    if trades_with_desired_game.count() > 0:
+        trade = trades_with_desired_game.first()
+        messages.add_message(request, 30, 'You specified in another trade that you already own ' + trade.owned_game.name + '. Delete the trade from the "Your Trades" page if you no longer own it.')
+        return trade_new(request)
+
     games = Game.objects.filter(Q(id=owned_game_id) | Q(id=desired_game_id))
 
     #todo: replace with owned_game_id=owned_game_id
@@ -80,11 +106,6 @@ class TradeCreateForm(forms.Form):
         return super().form_valid(form)
 
 
-class TradeCreateView(LoginRequiredMixin, CreateView):
-    model = Trade
-    fields = ["owned_game"]
-
-
 class GameAutoComplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         if not self.request.user.is_authenticated:
@@ -112,30 +133,93 @@ def home(request):
     return render(request, 'blog/home.html')
 
 
-class PostListView(ListView): #todo: remove
-    model = Post
-    template_name = 'blog/home.html'
-    context_object_name = 'posts'
-    ordering = ['-date_posted']
-    paginate_by = 5
+# Confirmed Trades page
+class ConfirmedTradesListView(LoginRequiredMixin, ListView):
+    model = Trade
+    template_name = 'blog/confirmed-trades.html'
+    context_object_name = 'transactions'
+    paginate_by = 3
+
+    def get_queryset(self):
+        current_user = self.request.user
+        transactions = Transaction.objects.filter(
+            (Q(trade_one__user_who_posted=current_user) | Q(trade_two__user_who_posted=current_user))
+             & ~Q(status__startswith='Cancelled')).order_by('-created_date') #hardcode WITH CASE (bad)
+        return transactions
 
 
-# ~~~CONFIRM TRADE, CREATE TRANSACTION~~~
-def confirm_trade(request):
+# Cancelled Trades page
+class CancelledTradesListView(ListView):
+    model = Trade
+    template_name = 'blog/cancelled-trades.html'
+    context_object_name = 'transactions'
+    paginate_by = 3
+
+    def get_queryset(self):
+        current_user = self.request.user
+        transactions = Transaction.objects.filter(
+            (Q(trade_one__user_who_posted=current_user) | Q(trade_two__user_who_posted=current_user))
+            & Q(status__startswith='Cancelled')).order_by('-created_date')  # hardcode WITH CASE (bad)
+        return transactions
+
+
+@login_required
+def insert_transaction(request):
+    print('~~~insert_transaction~~~')
     if 'trade_1_id' not in request.POST or 'trade_2_id' not in request.POST:
-        messages.add_message(request, DANGER, 'There was a problem deleting this trade. Please try again.')
-        return redirect('/your-matches')
+        messages.add_message(request, DANGER, 'There was a problem confirming this trade. Please try again.')
+        return redirect('/matches')
 
-    trade_1_id = request.POST['trade_1_id']
-    trade_2_id = request.POST['trade_2_id']
-    transaction = Transaction(trade_one_id=trade_1_id, trade_two_id=trade_2_id)
+    trade_one_id = request.POST['trade_1_id']
+    trade_two_id = request.POST['trade_2_id']
+    Trade.objects.filter(Q(id=trade_one_id) | Q(id=trade_two_id)).update(is_trade_proposed=True) # bulk update of 2 trade records
+
+    transaction = Transaction(trade_one_id=trade_one_id, trade_two_id=trade_two_id)
     transaction.save()
-    messages.add_message(request, SUCCESS, 'Trade confirmed (keep?)')
-    return redirect('/confirmed-trades') #redirect to newly created transaction record
+    return redirect('confirmed-trade', pk=transaction.pk)
+
+
+class TransactionDetailView(DetailView):
+    model = Transaction
+    template_name = 'blog/transaction_detail.html'
+
+
+# ~~~Set Transaction to Cancelled~~~
+@login_required
+def set_transaction_to_cancelled_by_user(request):
+    if request.POST.get('transaction_id') is None:
+        messages.add_message(request, DANGER, 'There was a problem cancelling this trade. Please try again.')
+        return redirect('/confirmed-trades')
+    transaction_id = str(request.POST.get('transaction_id'))
+    transaction = Transaction.objects.get(id=transaction_id)
+    transaction.status = TRANSACTION_CANCELLED_BY_USER + ' ' + str(request.user)
+    transaction.user_cancelled_date = timezone.now()
+    transaction.save()
+
+    # bulk update of 2 trade records so they show up on Matches page again
+    Trade.objects.filter(Q(id=transaction.trade_one_id) | Q(id=transaction.trade_two_id)).update(is_trade_proposed=False)
+    messages.add_message(request, SUCCESS, 'Trade cancelled')
+    return redirect('confirmed-trade', pk=transaction.pk)
+
+
+# ~~~Set Transaction to Open~~~
+@login_required
+def set_transaction_to_open(request):
+    if request.POST.get('transaction_id') is None:
+        messages.add_message(request, DANGER, 'There was a problem confirming this trade. Please try again.')
+        return redirect('/confirmed-trades')
+
+    transaction_id = str(request.POST.get('transaction_id'))
+    transaction = Transaction.objects.get(id=transaction_id)
+    transaction.status = TRANSACTION_OPEN
+    transaction.save()
+
+    messages.add_message(request, SUCCESS, 'Trade is now Open')
+    return redirect('confirmed-trade', pk=transaction.pk)
 
 
 # Matches page
-class TradeListView(ListView):
+class TradeListView(LoginRequiredMixin, ListView):
     model = Trade
     template_name = 'blog/matches.html' # <app>/<model>_<viewtype>.html
     context_object_name = 'trades'
@@ -145,7 +229,7 @@ class TradeListView(ListView):
         current_user_id = self.request.user.id
         # Get trades of other users who match your submitted trades
         # t1 is the current_user's trade, t2 is the matched trade
-        trades = Trade.objects.raw('SELECT DISTINCT t1.id AS id, ' 
+        trades = Trade.objects.raw('SELECT DISTINCT t1.id AS id, '  #todo: order by membership type
                                    't2.id AS t2_id, '
                                    't2.name AS t2_name, ' 
                                    't1.owned_game as t1_owned_game, '
@@ -166,7 +250,7 @@ class TradeListView(ListView):
 
 
 # Your Trades page
-class YourTradesListView(ListView):
+class YourTradesListView(LoginRequiredMixin, ListView):
     model = Trade
     template_name = 'blog/your-trades.html'
     context_object_name = 'trades'
@@ -174,7 +258,7 @@ class YourTradesListView(ListView):
 
     def get_queryset(self):
         current_user = self.request.user
-        trades = Trade.objects.filter(user_who_posted=current_user)
+        trades = Trade.objects.filter(user_who_posted=current_user).order_by('-created_date')
         return trades
 
 
@@ -185,7 +269,7 @@ class UserPostListView(ListView):
     paginate_by = 5
 
     def get_queryset(self):
-        user = get_object_or_404(User, username=self.kwargs.get('username'))
+        user = get_object_or_404(get_user_model(), username=self.kwargs.get('username'))
         return Post.objects.filter(author=user).order_by('-date_posted')
 
 

@@ -3,8 +3,15 @@
 <h1>Your Matches</h1>
 <br />
 
-<h5>These proposed trades by other users match the trades you submitted</h5>
+<h5>These proposed trades by other users include a game you want for a game that you own</h5>
 <br />
+{% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+{% endif %}
     {% for trade in trades %}
         <article class="media content-section">
           <div class="media-body">
@@ -36,15 +43,16 @@
                   <p>This trade is:</p>
                 <span>- Your copy of: <b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }})<br /></span>
                 <span>- For {{ trade.t2_username }}'s copy of: <b>{{ trade.desired_game.name }}</b>({{ trade.desired_game.platform }})</span> <br /> <br />
-                <p style="margin-left: 1%"><i class="fa fa-info-circle" aria-hidden="true"></i> You will have 3 trade confirmations available after confirming this trade.</p>
+                <p style="margin-left: 1%"><i class="fa fa-info-circle" aria-hidden="true"></i> You will have 3 <a href="#" target="_blank">
+                    trade confirmations</a> available after confirming this trade</p>
               </div>
             <form action="{% url 'trade-confirm' %}" method="post">
                 {% csrf_token %}
                 <input type="hidden" value="{{ trade.id }}" name="trade_1_id">
                 <input type="hidden" value="{{ trade.t2_id }}" name="trade_2_id">
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Confirm trade</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Confirm trade</button>
               </div>
             </form>
             </div>

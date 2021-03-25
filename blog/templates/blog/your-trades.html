@@ -24,7 +24,15 @@
               <span class="article-content">You want to trade your copy of </span>
               <span><b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }}) </span>
               <span>for someone else's copy of <b>{{ trade.desired_game.name }}</b>({{ trade.desired_game.platform }})</span> <br />
-             <button style="padding: 5px 15px 5px 15px; margin-top: 10px" data-toggle="modal" data-target="#deleteTradeModal-{{trade.id}}" class="btn btn-outline-danger">Delete trade</button>
+              {% if trade.is_trade_proposed %}
+              <span class="d-inline-block" tabindex="0" data-toggle="tooltip"
+                    title="You cannot delete a trade that has been confirmed. Check the Confirmed Trades page if you wish to cancel.">
+                    <button type="button" data-toggle="tooltip" data-placement="top"
+                    disabled style="pointer-events: none;padding: 5px 15px 5px 15px; margin-top: 10px" class="btn btn-outline-danger">Delete trade</button>
+              </span>
+             {% else %}
+                <button style="padding: 5px 15px 5px 15px; margin-top: 10px" data-toggle="modal" data-target="#deleteTradeModal-{{trade.id}}" class="btn btn-outline-danger">Delete trade</button>
+              {% endif %}
           </div>
         </article>
 
@@ -79,4 +87,22 @@
       {% endif %}
 
     {% endif %}
+
+<script>
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip({
+        placement : 'top'
+    });
+});
+</script>
+<style>
+    .bs-example{
+        margin: 50px;
+    }
+    .bs-example a{
+        font-size: 22px;
+        text-decoration: none;
+        margin: 0 10px;
+    }
+</style>
 {% endblock content %}

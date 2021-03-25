@@ -19,9 +19,12 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from users import views as user_views
+from chat.views import index
 
 
 urlpatterns = [
+    path('', include('chat.urls', namespace='chat')), #chat app
+
     path('admin/', admin.site.urls), #default "admin" page supplied by Django?
     path('register/', user_views.register, name='register'),
     path('profile/', user_views.profile, name='profile'),

@@ -1,7 +1,17 @@
 from django.db import models
 from django.utils import timezone
+# from django.contrib.auth.models import User
+
+
+# from django.contrib.auth import get_user_model
+# User = get_user_model() # todo: this line breaks heroku
+# from django.conf import settings
+# from users.models import User
+# from django.contrib.auth.models import User
 from django.contrib.auth.models import User
+
 from django.urls import reverse
+from datetime import datetime, timedelta
 
 # we're inheriting from the models.Model
 class Post(models.Model):
@@ -77,7 +87,7 @@ class Transaction(models.Model):
     name = models.TextField() # Unrestricted text
     created_date = models.DateTimeField(default=timezone.now)
 
-    # The owned game of the user who created the Trade record. If a game is deleted, so is the trade
+    # The trade of the user who created the Trade record. If a game is deleted, so is the trade
     # Specify the related_name to avoid the same lookup name (Trade.Game)
     trade_one = models.ForeignKey(Trade, on_delete=models.CASCADE, related_name='trade_one', db_column='trade_one')
 
@@ -85,15 +95,33 @@ class Transaction(models.Model):
     # Specify the related_name to avoid the same lookup name (Trade.Game)
     trade_two = models.ForeignKey(Trade, on_delete=models.CASCADE, related_name='trade_two', db_column='trade_two')
 
-    # def get_trade_name(self):
-    #     return ''.join([self.user_who_posted.username, '(', timezone.now().strftime("%b %d, %Y %H:%M:%S UTC"), ')'])
-    #
-    # def save(self, *args, **kwargs):
-    #     print('trade_one username: ' + str(self.trade_one.user.username))
-    #     print('trade_two username: ' + str(self.trade_two.user.username))
-    #     self.name = self.get_trade_name()
-    #     super(Trade, self).save(*args, **kwargs)
+    # Options: Cancelled: cancelled by user, Cancelled: auto-cancelled due to inactivity for 2 days, Open
+    status = models.TextField()  # Unrestricted text. Validated in form.
+
+    # While the trade is in "Waiting on user..." status, if trade_two.user does not confirm the trade within 3 days, it will be auto-cancelled
+    expiry_date = models.DateTimeField(default=datetime.today() + timedelta(days=3))
+
+    # While the trade is in "Open" status, if the trade does not complete within 9 days after the transaction was created, it will be auto-cancelled
+    open_expiry_date = models.DateTimeField(default=datetime.today() + timedelta(days=9))
+
+    user_cancelled_date = models.DateTimeField(null=True, blank=True)
+
+    def get_transaction_name(self):
+        return ''.join([str(self.trade_one_id), ' and ', str(self.trade_two_id), ' on ', timezone.now().strftime("%b %d, %Y %H:%M:%S UTC"), ''])
+
+    def get_status_on_insert(self):
+        return 'Waiting for 2nd confirmation from ' + str(self.trade_two.user_who_posted)
+
+    def save(self, *args, **kwargs):
+        if self.name == '':
+            self.name  = self.get_transaction_name()
+        if self.status == '':
+            self.status = self.get_status_on_insert()
+        super(Transaction, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.name # return game name when game.objects.all() is called
+        return self.name # return name when game.objects.all() is called
+
+    def get_absolute_url(self): #todo: remove?
+        return reverse('confirmed-trade', kwargs={'pk': self.pk})
 
