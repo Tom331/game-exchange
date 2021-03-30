@@ -1,3 +1,5 @@
+print('~~~\n\nvery top in blog/models.py\n\n~~~')
+
 from django.contrib import admin
 from .models import Post, Game, Trade, Transaction
 

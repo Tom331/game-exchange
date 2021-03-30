@@ -14,16 +14,16 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
     {% if title %}
-        <title>Game Exchange - {{ title }}</title>
+        <title>Video Game Exchange - {{ title }}</title>
     {% else %}
-        <title>Game Exchange</title>
+        <title>Video Game Exchange</title>
     {% endif %}
 </head>
 <body>
     <header class="site-header">
       <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
         <div class="container">
-          <a class="navbar-brand mr-4" href="{% url 'blog-home' %}">Game Exchange</a> <!--blog-home is the name we gave to our url pattern. It gets the absolute path-->
+          <a class="navbar-brand mr-4" href="{% url 'blog-home' %}">Video Game Exchange</a> <!--blog-home is the name we gave to our url pattern. It gets the absolute path-->
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
           </button>
@@ -31,7 +31,7 @@
             <div class="navbar-nav mr-auto">
               <a class="nav-item nav-link" href="{% url 'blog-home' %}">Home</a>
               <a class="nav-item nav-link" href="{% url 'blog-about' %}">About</a>
-              <a class="nav-item nav-link" href="{% url 'blog-about' %}">FAQ</a>
+              <a class="nav-item nav-link" href="{% url 'blog-faq' %}">FAQ</a>
             </div>
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
@@ -64,22 +64,25 @@
           {% block content %}{% endblock %}
         </div>
         <div class="col-md-4">
-          <div class="content-section">
-              {% if user.id != Null %}
-                <h5>Hi, {{user}}!</h5>
-                - Your membership type: <b>Premium</b><br />
-                - <a href="#"><u>Membership type information</u></a> <br />
-              {% endif %}
-              <br />
-              <b>Safari</b> browser is not fully supported
-              <br /> <br />
-              <ul class="list-group">
-                <li class="list-group-item list-group-item-light">Announcements</li>
-                <li class="list-group-item list-group-item-light">Support</li>
-                <li class="list-group-item list-group-item-light">Report User</li>
-              </ul>
-            </p>
-          </div>
+              <div class="content-section">
+
+                  {% block sidebar %} {% endblock %} <!-- if on transaction page, show chat window-->
+
+                  {% if user.id != Null %}
+                    <h5>Hi, {{user}}!</h5>
+                    - Your membership type: <b>Premium</b><br />
+                    - <a href="#"><u>Membership type information</u></a> <br />
+                  {% endif %}
+                  <br />
+                  <b>Safari</b> browser is not fully supported
+                  <br /> <br />
+                  <ul class="list-group">
+                    <li class="list-group-item list-group-item-light">Account</li>
+                    <li class="list-group-item list-group-item-light">Announcements</li>
+                    <li class="list-group-item list-group-item-light">Support</li>
+                  </ul>
+                </p>
+              </div>
         </div>
       </div>
     </main>

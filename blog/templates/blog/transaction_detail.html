@@ -1,11 +1,14 @@
-{% extends "blog/base.html" %}
+
+{% extends 'blog/room.html' %}
+{% load static %}
 {% block content %}
 
-{% if user.id != object.trade_one.user_who_posted_id and user.id != object.trade_two.user_who_posted_id %}
+{% if user.id != object.trade_one.user_who_posted_id and user.id != object.trade_two.user_who_posted_id and user.id != 1 %}
     <div>There was a problem loading this page. You may not have access.</div>
 {% endif %}
 
-{% if user.id == object.trade_one.user_who_posted_id or user.id == object.trade_two.user_who_posted_id %}
+<!--hardcode-->
+{% if user.id == object.trade_one.user_who_posted_id or user.id == object.trade_two.user_who_posted_id or user.id == 1 %}
 
     {% if messages %}
                 {% for message in messages %}
@@ -15,11 +18,12 @@
                 {% endfor %}
     {% endif %}
         <div class="content-section">
+
                 <div class="form-group">
                     <legend class="border-bottom mb-4">Confirmed Trade: {{ object.trade_one.user_who_posted }}
                         and {{ object.trade_two.user_who_posted }} </legend>
-                    {% if 'cancelled by user' in object.status %}
-                        <h6><u>Current Status:</u> {{ object.status }} on {{ object.user_cancelled_date|date:"M j, Y g:iA" }}</h6>
+                    {% if 'Manually cancelled' in object.status %}
+                        <h6><u>Current Status:</u> {{ object.status }} on {{ object.user_cancelled_date|date:"M j, Y g:iA" }}</h6> <!--hardcode-->
                     {% else %}
                         <h6><u>Current Status:</u> {{ object.status }}</h6>
                     {% endif %}
@@ -68,7 +72,9 @@
                     </span>
                 {% endif %}
             <br />
+
         </div>
+
 
     <!-- Cancel Modal -->
             <div class="modal fade" id="cancelTransactionModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -159,5 +165,8 @@
             margin: 0 10px;
         }
     </style>
-{% endif %} <!--end if currentuser == trade_one.user or trade_two.user-->
+
+
+    {% endif %} <!--end if currentuser == trade_one.user or trade_two.user-->
+
 {% endblock content %}

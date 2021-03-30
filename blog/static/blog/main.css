@@ -1,9 +1,47 @@
-/* Toms overwrites */
+/* Toms overwrites: Comment to re-add */
 /*
 .nav-item {
     margin-left: 1%;
 }
 */
+
+/*~~~ START MOBILE CUSTOMIZATIONS ~~~*/
+
+
+@media only screen and (max-width: 600px) {
+    .modal-dialog { /* Modals for mobile*/
+        max-width: 85% !important;
+        margin: 0 auto !important;
+    }
+
+    .col-md-8 { /* Word wrap for sidebar*/
+        word-wrap: break-word;
+    }
+
+    .toms-mobile-card { /* fix mobile on FAQ page */
+        white-space: pre-line;
+        word-break: break-word;
+        text-align: left;
+    }
+
+}
+
+
+/*~~~ END MOBILE CUSTOMIZATIONS ~~~*/
+
+#scroller * {
+    /* don't allow the children of the scrollable element to be selected as an anchor node */
+    overflow-anchor: none;
+}
+
+#anchor {
+    /* allow the final child to be selected as an anchor node */
+    overflow-anchor: auto;
+
+    /* anchor nodes are required to have non-zero area */
+    height: 1px;
+}
+
 .select2-container--default .select2-selection--single .select2-selection__rendered {
     line-height: 19px !important;
 }
@@ -34,6 +72,10 @@
 .tooltip:hover .tooltiptext {
   visibility: visible;
 }
+
+
+
+
 /* End Toms overwrites */
 
 

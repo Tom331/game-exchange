@@ -78,7 +78,7 @@ def insert_new_trade(request):
     return trade_new(request)
 
 
-class TradeCreateForm(forms.Form):
+class TradeCreateForm(LoginRequiredMixin, forms.Form):
     the_game_you_own = forms.ModelChoiceField(
         queryset=Game.objects.all(),
         to_field_name='owned',
@@ -117,6 +117,7 @@ class GameAutoComplete(autocomplete.Select2QuerySetView):
 
 
 # ~~~DELETE TRADE~~~
+@login_required
 def delete_trade(request):
     if 'trade_id' not in request.POST:
         messages.add_message(request, DANGER, 'There was a problem deleting this trade. Please try again.')
@@ -149,7 +150,7 @@ class ConfirmedTradesListView(LoginRequiredMixin, ListView):
 
 
 # Cancelled Trades page
-class CancelledTradesListView(ListView):
+class CancelledTradesListView(LoginRequiredMixin, ListView):
     model = Trade
     template_name = 'blog/cancelled-trades.html'
     context_object_name = 'transactions'
@@ -176,10 +177,12 @@ def insert_transaction(request):
 
     transaction = Transaction(trade_one_id=trade_one_id, trade_two_id=trade_two_id)
     transaction.save()
+
     return redirect('confirmed-trade', pk=transaction.pk)
 
 
-class TransactionDetailView(DetailView):
+
+class TransactionDetailView(LoginRequiredMixin, DetailView):
     model = Transaction
     template_name = 'blog/transaction_detail.html'
 
@@ -306,3 +309,8 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 # Go to About page
 def about(request):
     return render(request, 'blog/about.html', {'title': 'About'})
+
+
+# Go to FAQ page
+def faq(request):
+    return render(request, 'blog/faq.html', {'title': 'FAQ'})
