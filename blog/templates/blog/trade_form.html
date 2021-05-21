@@ -6,23 +6,88 @@
             <div class="form-group">
                 <legend class="border-bottom mb-4">Propose New Trade</legend>
 
-          {% if messages %}
-            {% for message in messages %}
-              <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-              </div>
-            {% endfor %}
-          {% endif %}
-
                 {% csrf_token %}
                 {{ form|crispy }}
 
                 {{ form.media }}
             </div>
             <div class="form-group">
-                <button class="btn btn-outline-info" type="submit">Submit</button>
+                <button onclick="clearMessage()" class="post-button btn btn-outline-info" type="submit">Submit</button>
             </div>
         </form>
         <br />
+
+        <small class="text-muted"><u>Not sure what game you want?</u> Try this
+                <a href="https://apps.quanticfoundry.com/recommendations/gamerprofile/videogame/" target="_blank">Game Recommendation Engine</a></small>
+        <br /> <br />
+        <small class="text-muted"><u>Having trouble finding a game? Try these search tips:</u> <br />
+            - <i>Try with roman numerals instead of numbers. Eg) "Doom II" instead of "Doom 2"</i> <br />
+            - <i>Try adding or removing a colon. Eg) "Halo: Reach" instead of "Halo Reach"</i> <br />
+            - <i>Ensure hyphenation is correct. Eg) "Half-Life" instead of "Half Life"</i>
+        </small>
     </div>
+
+
+<!-- 'Confirm Trade' Email Notifications Modal -->
+    {% if first_trade_proposal %} <!-- If current user has not submitted a trade proposal yet, show modal after submission -->
+        <div id="firstTradeModal" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1"
+             role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+          <div style="max-width: 38%" class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Congratulations on your first Trade Proposal!</h5>
+              </div>
+                  <div class="modal-body">
+                      <p>Would you like to receive an email when other users confirm to follow through with your trades?</p>
+                  </div>
+            <form id="email-notification-form" action="{% url 'trade-insert-update-email' %}" method="post" onsubmit="event.preventDefault(); validateRadio();">
+                {% csrf_token %}
+                <input type="hidden" value="{{ user.id }}" name="user_id">
+                <input type="hidden" value="trade" name="source_page"> <!--tell the backend method which page to redirect to-->
+                <div style="margin-left: 2%">
+                    <input type="radio" id="notif_yes" value="yes" name="notifications">
+                    <label for="notif_yes">Yes</label><br>
+                    <input type="radio" id="notif_no" value="no" name="notifications">
+                    <label for="notif_no">No</label><br>
+                </div>
+              <div class="modal-footer">
+                <button id="submitButton" onclick="validateRadio()" style="margin: 0 auto;" type="submit" class="post-button btn btn-primary">Submit</button>
+              </div>
+              <div id="show-error"></div>
+            </form>
+            </div>
+          </div>
+            <script defer>
+                window.onload = function () {
+                    var first_trade_proposal = {{ user.first_trade_proposal|lower }}
+                    $('#firstTradeModal').modal('show');
+                }
+            </script>
+        </div>
+    {% endif %}
+
+    <script>
+        function clearMessage() { // Remove old message before displaying the new one
+            var message_element = document.getElementById("message-prompt");
+            if(message_element != null) {
+                message_element.style.opacity = "0";
+            }
+        }
+
+
+        function validateRadio() { // Called on click of Submit button to validate "Yes"/"No" for email opt-in
+            var yesSelected = $('#notif_yes').is(':checked');
+            var noSelected = $('#notif_no').is(':checked');
+            var valid = (yesSelected || noSelected); //at leat 1 option is selected
+
+            if(!valid) {
+                $('#show-error').empty();
+                $('#show-error').append('<p style="text-align: center; color: red; margin-top: 5px;">Please select Yes or No</p>');
+                return false;
+            } else {
+                document.getElementById("email-notification-form").submit();
+            }
+    }
+
+    </script>
 {% endblock content %}

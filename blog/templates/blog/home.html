@@ -1,34 +1,39 @@
 {% extends "blog/base.html" %}
 {% block content %}
-<h1>Welcome to Video Game Exchange!</h1>
+<h1>Welcome to Game Exchange! <i><small>(BETA)</small></i></h1>
 <br />
-<h4>What is Video Game Exchange?</h4>
-<p>Video Game Exchange automatically sets up a trade for you with nearby gamers who own the game you want, and want the game you own.
-   Stop getting ripped off by low trade-in values and get new games for the ones you don't play anymore!</p>
+<h4>What is Game Exchange?</h4>
+<p>A <b>free</b> web app that automatically sets up a trade for you with people nearby who own the game you want, and want the game you own.
+    You can also buy and sell video games, and will be matched with users who have already indicated they will buy or sell the game at your specified price.
+    <br /> <br />Stop wasting time negotiating on Facebook Marketplace and getting ripped off by low trade-in values!
+</p>
 <br />
 
-<img src="/media/meme2.jpg" width="80%">
+<img src="/media/meme2.jpg" style="display: block; margin-left: auto; margin-right: auto;" width="80%">
 <br /> <br />
 
 {% if not user.is_authenticated %}
 <span>
     <button onclick="document.location='/login'" style="margin-left: 20%; padding: 10px 30px 10px 30px" class="btn btn-outline-info">Log In</button>
-    <button onclick="document.location='/register'" style="margin-left: 20%; padding: 10px 30px 10px 30px" class="btn btn-outline-info">Sign Up</button>
+    <button onclick="document.location='/register'" style="margin-left: 20%; padding: 10px 30px 10px 30px" class="btn btn-outline-info">Sign Up for Free</button>
 </span>
 <br /> <br />
 {% endif %}
 
 <h4>How does it work?</h4>
-    <u>Once you're registered, setting up a trade is a simple three-step process:</u>
+    <u>Once you're signed up, making an offer to trade, buy or sell is a simple three-step process:</u>
     <ol>
-        <li>Click the "Propose New Trade" tab</li>
-        <li>Enter the title of the game you own and want to trade away</li>
-        <li>Enter the title of the game you want to receive in exchange for the game you own</li>
+        <li>Click the "Make an Offer" tab</li>
+        <li>Select "Trade a Game", "Buy a Game" or "Sell a Game"</li>
+        <li>Enter the details of your offer:</li>
+        <ul>
+            <li>For <b>trades</b>, enter the the game you own and the game you want in exchange</li>
+            <li>For <b>buying a game</b>, enter your desired game and how much you're willing to pay for it</li>
+            <li>For <b>selling a game</b>, enter your owned game and how much you're willing to sell it for</li>
+        </ul>
     </ol>
-    Once you submit your proposed trade, Video Game Exchange will look for a proposed trade by another user who wants the game you own, and owns the game you want.
-    If there is a match, it will show up on the "Matches" page. If you <a href="#">signed up for notifications</a>, you will also receive an email
-    within minutes that a match has been found so you can get in contact with the other user right away.
-</p>
+    Once you submit your offer, Game Exchange will immediately prompt you if a match was found, and the match will be displayed on the "Matches" page.
+    If there is not a match, but later a user shows interest in your offer, you will receive an email.
 
 <br /> <br /> <br />
 {% endblock content %}

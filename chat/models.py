@@ -1,9 +1,14 @@
 from django.db import models
 
-print('~~~\n\nvery top in CHAT/models.py\n\n~~~')
+print('~~~top of chat/models.py~~~')
 
-from django.contrib.auth import get_user_model
-User = get_user_model()
+
+from django.conf import settings
+User = settings.AUTH_USER_MODEL
+# from django.contrib.auth import get_user_model
+# User = get_user_model()
+# from users.models import User
+
 from django.utils import timezone
 from blog.models import Transaction
 
@@ -19,3 +24,5 @@ class Message(models.Model):
 
     def last_10_messages(self, transaction_id):
         return Message.objects.filter(transaction_id=transaction_id).order_by('-timestamp').all()[:10] # only load last x msgs from DB
+
+print('~~~bottom of chat/models.py~~~')

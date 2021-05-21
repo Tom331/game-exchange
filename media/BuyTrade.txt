@@ -1,0 +1,13 @@
+Hi {{ username }},
+
+A nearby user wants to sell {{ desired_game }} to you for ${{ transaction_price }}.
+
+To arrange a meetup, go to this link: {{ transaction_url }}
+
+Happy trading,
+
+The Game Exchange team
+
+
+If you would like to unsubscribe from these emails, click the link below:
+{{ opt_out_url }}

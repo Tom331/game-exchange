@@ -1,18 +1,11 @@
 {% extends "blog/base.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-<h1>Your Trades</h1>
+<h1>Your Offers</h1>
 <br />
 
-<h5>These are the trades you have proposed to other users</h5>
+<h5>These are the offers you have proposed to other users</h5>
 <br />
-{% if messages %}
-            {% for message in messages %}
-              <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-              </div>
-            {% endfor %}
-{% endif %}
 
     {% for trade in trades %}
         <article class="media content-section">
@@ -20,19 +13,68 @@
             <div class="article-metadata">
                 <small class="text-muted"><b>Created:</b> {{ trade.created_date|date:"M j, Y g:iA" }} PT</small>
                 <small class="text-muted"><b>id(REMOVE):</b> {{ trade.id }}</small>
+                <small class="text-muted"><b>confirmed?(REMOVE):</b> {{ trade.is_trade_proposed }}</small>
+                <small class="text-muted"><b>transaction_price(REMOVE):</b> {{ trade.transaction_price }}</small>
             </div>
-              <span class="article-content">You want to trade your copy of </span>
-              <span><b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }}) </span>
-              <span>for someone else's copy of <b>{{ trade.desired_game.name }}</b>({{ trade.desired_game.platform }})</span> <br />
+
+              <!--Proposed Trade-->
+              {% if trade.desired_game != None and trade.owned_game != None %}
+                  <span>You want to trade:</span><br />
+                  <span>- Your copy of <b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }})</span> <br />
+                  <span>- For someone else's copy of <b>{{ trade.desired_game.name }}</b>({{ trade.desired_game.platform }})</span> <br />
+
+              <!--User wants to buy a game-->
+              {% elif trade.desired_game != None and trade.buy_price != None %}
+                    <span>You want to buy <b>{{ trade.desired_game.name }}</b>({{ trade.desired_game.platform }}) for at most <b>${{ trade.buy_price }}</b></span> <br />
+
+              <!--User wants to sell a game-->
+              {% elif trade.owned_game != None and trade.sell_price != None %}
+                    <span>You want to sell <b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }}) for at least <b>${{ trade.sell_price }}</b></span> <br />
+              {% endif %}
+
+
+              <!--Delete button-->
               {% if trade.is_trade_proposed %}
               <span class="d-inline-block" tabindex="0" data-toggle="tooltip"
-                    title="You cannot delete a trade that has been confirmed. Check the Confirmed Trades page if you wish to cancel.">
+                    title="You cannot delete an offer that is in progress. Check the 'In Progress' Committed Offers page if you wish to cancel.">
                     <button type="button" data-toggle="tooltip" data-placement="top"
-                    disabled style="pointer-events: none;padding: 5px 15px 5px 15px; margin-top: 10px" class="btn btn-outline-danger">Delete trade</button>
+                    disabled style="pointer-events: none;padding: 5px 15px 5px 15px; margin-top: 10px" class="btn btn-outline-danger">Delete offer</button>
               </span>
              {% else %}
-                <button style="padding: 5px 15px 5px 15px; margin-top: 10px" data-toggle="modal" data-target="#deleteTradeModal-{{trade.id}}" class="btn btn-outline-danger">Delete trade</button>
-              {% endif %}
+                <button style="padding: 5px 15px 5px 15px; margin-top: 10px" data-toggle="modal" data-target="#deleteTradeModal-{{trade.id}}" class="btn btn-outline-danger">Delete offer</button>
+             {% endif %}
+
+
+              <!--Update price button. User wants to buy a game.-->
+             {% if trade.desired_game != None and trade.buy_price != None %}
+                 {% if trade.is_trade_proposed %}
+                      <span class="d-inline-block" tabindex="0" data-toggle="tooltip"
+                            title="You cannot update an offer that is in progress. Check the 'In Progress' Committed Offers page if you wish to cancel.">
+                            <button type="button" data-toggle="tooltip" data-placement="top"
+                            disabled style="pointer-events: none;padding: 5px 15px 5px 15px; margin-top: 10px" class="btn btn-outline-info">Update price</button> <!--Update button: Takes user to Update form-->
+                      </span>
+
+                 {% else %}
+                        {% url 'update-buy' trade.id as buy_update_url%}
+                        <a href="{{ buy_update_url }}"
+                       style="padding: 5px 15px 5px 15px; margin-top: 10px"  class="btn btn-outline-primary">Update buy price</a>
+                 {% endif %}
+             {% endif %}
+
+             {% if trade.owned_game != None and trade.sell_price != None %}
+                {% if trade.is_trade_proposed %}
+                      <span class="d-inline-block" tabindex="0" data-toggle="tooltip"
+                            title="You cannot update an offer that is in progress. Check the 'In Progress' Committed Offers page if you wish to cancel.">
+                            <button type="button" data-toggle="tooltip" data-placement="top"
+                            disabled style="pointer-events: none;padding: 5px 15px 5px 15px; margin-top: 10px" class="btn btn-outline-info">Update price</button> <!--Update button: Takes user to Update form-->
+                      </span>
+
+                 {% else %}
+                        {% url 'update-sell' trade.id as sell_update_url%}
+                        <a href="{{ sell_update_url }}"
+                       style="padding: 5px 15px 5px 15px; margin-top: 10px"  class="btn btn-outline-primary">Update sell price</a>
+                 {% endif %}
+             {% endif %}
           </div>
         </article>
 
@@ -41,23 +83,37 @@
           <div style="max-width: 38%" class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle">Delete this trade?</h5>
+                <h5 class="modal-title" id="exampleModalLongTitle">Delete this offer?</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
+
               <div class="modal-body">
-                  <p>This trade is:</p>
+               <!--Proposed Trade-->
+              {% if trade.desired_game != None and trade.owned_game != None %}
+                <p>This trade is:</p>
                 <span>- Your copy of: <b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }})<br /></span>
                 <span>- For someone else's copy of: <b>{{ trade.desired_game.name }}</b>({{ trade.desired_game.platform }})</span> <br />
+
+              <!--User wants to buy a game-->
+              {% elif trade.desired_game != None and trade.buy_price != None %}
+                    <span>This offer is for you to buy <b>{{ trade.desired_game.name }}</b>({{ trade.desired_game.platform }}) for at most <b>${{ trade.buy_price }}</b></span> <br />
+
+              <!--User wants to sell a game-->
+              {% elif trade.owned_game != None and trade.sell_price != None %}
+                    <span>This offer is for you to sell <b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }}) for at least <b>${{ trade.sell_price }}</b></span> <br />
+              {% endif %}
               </div>
+
+
             <form action="{% url 'trade-delete' %}" method="post">
                 {% csrf_token %}
                 {{ form|crispy }}
                 <input type="hidden" value="{{ trade.id }}" name="trade_id">
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-danger">Delete trade</button>
+                <button type="submit" class="post-button btn btn-danger">Delete offer</button>
               </div>
             </form>
             </div>

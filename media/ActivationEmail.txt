@@ -1,0 +1,10 @@
+Hi {{ username }},
+
+Thank you for signing up to Game Exchange! You can confirm your email by visiting the link below:
+
+{{ activation_link }}
+
+Happy trading,
+
+The Game Exchange team
+

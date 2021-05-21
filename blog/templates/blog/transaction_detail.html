@@ -10,143 +10,264 @@
 <!--hardcode-->
 {% if user.id == object.trade_one.user_who_posted_id or user.id == object.trade_two.user_who_posted_id or user.id == 1 %}
 
-    {% if messages %}
-                {% for message in messages %}
-                  <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                  </div>
-                {% endfor %}
-    {% endif %}
         <div class="content-section">
 
                 <div class="form-group">
-                    <legend class="border-bottom mb-4">Confirmed Trade: {{ object.trade_one.user_who_posted }}
-                        and {{ object.trade_two.user_who_posted }} </legend>
+                    <legend class="border-bottom mb-4">Committed Offer: {{ object.trade_one.user_who_posted|truncatechars:26 }}
+                        and {{ object.trade_two.user_who_posted|truncatechars:26 }} </legend>
                     {% if 'Manually cancelled' in object.status %}
                         <h6><u>Current Status:</u> {{ object.status }} on {{ object.user_cancelled_date|date:"M j, Y g:iA" }}</h6> <!--hardcode-->
                     {% else %}
                         <h6><u>Current Status:</u> {{ object.status }}</h6>
                     {% endif %}
+
                     {% if 'Waiting' in object.status %} <!--hardcode. waiting on 2nd users confirmation-->
                         <h6><span class="fa fa-info-circle" data-toggle="tooltip" data-original-title="
-                        {{ object.trade_two.user_who_posted }} has until this date to confirm before this trade is auto-cancelled"></span>
-                        <u>Expiry Date</u>: {{ object.expiry_date|date:"M j, Y" }}</h6>
+                        If {{ object.trade_two.user_who_posted|truncatechars:26 }} does not confirm by this date, we
+                        recommend cancelling and finding another user to trade with."></span>
+                        <u>Recommended Expiry Date</u>: {{ object.expiry_date|date:"M j, Y" }}</h6>
                     {% endif %}
 
-                    {% if 'Open' in object.status %} <!--hardcode. trade is open. Will auto-cancel in 1 week-->
+                    {% if 'Open' in object.status %} <!--hardcode. trade is open. Recommended expiry-->
                         <h6><span class="fa fa-info-circle" data-toggle="tooltip" data-original-title="
-                        If the trade is not completed by this date, it will be auto-cancelled"></span>
-                        <u>Expiry Date</u>: {{ object.open_expiry_date|date:"M j, Y" }}</h6>
+                        If the trade does not complete by this date, we recommend cancelling and finding another user to trade with."></span>
+                        <u>Recommended Expiry Date</u>: {{ object.open_expiry_date|date:"M j, Y" }}</h6>
                     {% endif %}
 
                     {% csrf_token %}
                 </div>
 
-                {% if user.id == object.trade_one.user_who_posted_id %} <!--current user is the one who created the transaction-->
-                  <div class="modal-body">
-                      <p><u>This trade is:</u></p>
-                    <span>- Your copy of: <b>{{ object.trade_one.owned_game }}</b>({{ object.trade_one.owned_game.platform }})<br /></span>
-                    <span>- For {{ object.trade_two.user_who_posted }}'s copy of: <b>{{ object.trade_two.owned_game }}</b>({{ object.trade_two.owned_game.platform }})</span> <br />
-                  </div>
+
+              <!--trade_one and trade_two are trading-->
+              {% if transaction.price is None %}
+                    <div>
+                        <p><u>This trade is:</u></p>
+                        <span>- <u>{{ object.trade_one.user_who_posted|truncatechars:26 }}</u>'s copy of
+                            <b>{{ object.trade_one.owned_game }}</b>({{ object.trade_one.owned_game.platform }}). Disc condition: {{ object.trade_one.condition }} <br /></span>
+                          <span>- For <u>{{ object.trade_two.user_who_posted|truncatechars:26 }}</u>'s copy of:
+                              <b>{{ object.trade_two.owned_game }}</b>({{ object.trade_two.owned_game.platform }}). Disc condition: {{ object.trade_one.condition }}
+                          Disc condition: {{ object.trade_two.condition }}</span> <br />
+                    </div>
                 {% endif %}
 
-                {% if user.id == object.trade_two.user_who_posted_id %} <!--current user is the user the one that needs to confirm the transaction-->
-                  <div class="modal-body">
-                      <p>This trade is:</p>
-                    <span>- Your copy of: <b>{{ object.trade_two.owned_game }}</b>({{ object.trade_two.owned_game.platform }})<br /></span>
-                    <span>- For {{ object.trade_one.user_who_posted }}'s copy of: <b>{{ object.trade_one.owned_game }}</b>({{ object.trade_one.owned_game.platform }})</span> <br />
-                  </div>
-                {% endif %}
+              <!--trade_one is buying from trade_two-->
+              {% if object.trade_one.buy_price != None and object.trade_two.sell_price != None and object.trade_two.owned_game != None %}
+              <br />
+              <p><u>Details:</u></p>
+              <span><u>{{ object.trade_two.user_who_posted|truncatechars:26 }}</u> is selling
+                  <b>{{ object.trade_one.desired_game }}</b>({{ object.trade_one.desired_game.platform }}) to <u>{{ object.trade_one.user_who_posted|truncatechars:26 }}</u> for
+                  <b>${{ object.price }}</b> </span> <br />
+              {% endif %}
+
+            <!--trade_two is buying from trade_one-->
+              {% if object.trade_two.buy_price != None and object.trade_one.sell_price != None and object.trade_one.owned_game != None %}
+              <br />
+              <p><u>Details:</u></p>
+              <span><u>{{ object.trade_one.user_who_posted|truncatechars:26 }}</u> is selling
+                  <b>{{ object.trade_two.desired_game }}</b>({{ object.trade_two.desired_game.platform }}) to <u>{{ object.trade_two.user_who_posted|truncatechars:26 }}</u> for
+                  <b>${{ object.price }}</b> </span> <br />
+              {% endif %}
+
+
+
+
                  <br />
 
-                {% if 'Cancelled' not in object.status %} <!--hardcode-->
+
+            <!--BUTTONS TODO: fix how it looks on mobile-->
+
+
+                <!--Show cancel button if Cancelled not in Status and if status != 'Completed by both users'-->
+                {% if 'Cancelled' not in object.status and 'Completed' not in object.status and 'Flagged' not in object.status %} <!--hardcode-->
                     <span class="form-group">
                         <button data-toggle="modal" data-target="#cancelTransactionModal" class="btn btn-outline-danger">Cancel trade</button>
                     </span>
                 {% endif %}
 
+                <!--Show complete button if Transaction is Open or if it's been completed by the other user. Don't show if you already clicked-->
+                {% if 'Cancelled' not in object.status and 'Waiting for 2nd' not in object.status and object.status != 'Completed by both users' and user != object.user_who_completed and 'Flagged' not in object.status %} <!--hardcode-->
+                    <span class="form-group">
+                        <button data-toggle="modal" data-target="#completeTransactionModal" class="btn btn-outline-success">Complete trade</button>
+                    </span>
+                {% endif %}
+
                 <!--Only show the confirm button if the current user is transaction.trade_two.user, because trade_one.user created this transaction-->
-                {% if 'Cancelled' not in object.status and 'Open' not in object.status and user.id == object.trade_two.user_who_posted_id %} <!--hardcode CASE-->
+                {% if 'Cancelled' not in object.status and 'Completed' not in object.status and object.status != 'Open' and  user.id == object.trade_two.user_who_posted_id and 'Flagged' not in object.status %} <!--hardcode CASE-->
                     <span style="margin-left: 2%;" class="form-group">
-                        <button data-toggle="modal" data-target="#confirmTransactionModal" class="btn btn-outline-primary">Confirm trade and open chat</button>
+                        <button data-toggle="modal" data-target="#confirmTransactionModal" class="btn btn-outline-primary">Confirm trade</button>
+                    </span>
+                {% endif %}
+
+            <!--Show "This trade is not completed" button-->
+                {% if 'Completed' in object.status and user != object.user_who_completed and object.status != 'Completed by both users' %} <!--hardcode-->
+                    <span class="form-group">
+                        <button data-toggle="modal" data-target="#notCompletedTransactionModal" class="btn btn-outline-danger">This trade was not completed</button>
                     </span>
                 {% endif %}
             <br />
-
         </div>
 
 
+    <!--MODALS-->
+
+
     <!-- Cancel Modal -->
-            <div class="modal fade" id="cancelTransactionModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-              <div style="max-width: 38%" class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLongTitle">Cancel this trade?</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                    {% if user.id == object.trade_one.user_who_posted_id %} <!--current user is the one who created the transaction-->
-                      <div class="modal-body">
-                          <p>This trade is:</p>
-                        <span>- Your copy of: <b>{{ object.trade_one.owned_game }}</b>({{ object.trade_one.owned_game.platform }})<br /></span>
-                        <span>- For {{ object.trade_two.user_who_posted }}'s copy of: <b>{{ object.trade_two.owned_game }}</b>({{ object.trade_two.owned_game.platform }})</span> <br />
-                      </div>
-                    {% endif %}
-                    {% if user.id == object.trade_two.user_who_posted_id %} <!--current user is the user the one that needs to confirm the transaction-->
-                      <div class="modal-body">
-                          <p>This trade is:</p>
-                        <span>- Your copy of: <b>{{ object.trade_two.owned_game }}</b>({{ object.trade_two.owned_game.platform }})<br /></span>
-                        <span>- For {{ object.trade_one.user_who_posted }}'s copy of: <b>{{ object.trade_one.owned_game }}</b>({{ object.trade_one.owned_game.platform }})</span> <br />
-                      </div>
-                    {% endif %}
-                <form action="{% url 'confirmed-trade-cancel' %}" method="post">
-                    {% csrf_token %}
-                    <input type="hidden" value="{{ object.id }}" name="transaction_id">
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
-                    <button type="submit" class="btn btn-danger">Cancel trade</button>
-                  </div>
-                </form>
-                </div>
-              </div>
-            </div>
+    <div class="modal fade" id="cancelTransactionModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div style="max-width: 38%" class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Cancel this trade?</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+             <!--trade_one and trade_two are trading-->
+              {% if transaction.price is None %}
+                    <div>
+                        <p><u>This trade is:</u></p>
+                        <span>- <u>{{ object.trade_one.user_who_posted|truncatechars:26 }}</u>'s copy of
+                            <b>{{ object.trade_one.owned_game }}</b>({{ object.trade_one.owned_game.platform }}). Disc condition: {{ object.trade_one.condition }} <br /></span>
+                          <span>- For <u>{{ object.trade_two.user_who_posted|truncatechars:26 }}</u>'s copy of:
+                              <b>{{ object.trade_two.owned_game }}</b>({{ object.trade_two.owned_game.platform }}). Disc condition: {{ object.trade_two.condition }}</span> <br />
+                    </div>
+                {% endif %}
+
+              <!--trade_one is buying from trade_two-->
+              {% if object.trade_one.buy_price != None and object.trade_two.sell_price != None and object.trade_two.owned_game != None %}
+              <p><u>Details:</u></p>
+              <span><u>{{ object.trade_two.user_who_posted|truncatechars:26 }}</u> is selling
+                  <b>{{ object.trade_one.desired_game }}</b>({{ object.trade_one.desired_game.platform }}) to <u>{{ object.trade_one.user_who_posted|truncatechars:26 }}</u> for
+                  <b>${{ object.price }}</b> </span> <br />
+              {% endif %}
+
+            <!--trade_two is buying from trade_one-->
+              {% if object.trade_two.buy_price != None and object.trade_one.sell_price != None and object.trade_one.owned_game != None %}
+              <p><u>Details:</u></p>
+              <span><u>{{ object.trade_one.user_who_posted|truncatechars:26 }}</u> is selling
+                  <b>{{ object.trade_two.desired_game }}</b>({{ object.trade_two.desired_game.platform }}) to <u>{{ object.trade_two.user_who_posted|truncatechars:26 }}</u> for
+                  <b>${{ object.price }}</b> </span> <br />
+              {% endif %}
+          </div>
+        <form action="{% url 'confirmed-trade-cancel' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" value="{{ object.id }}" name="transaction_id">
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
+            <button type="submit" class="post-button btn btn-danger">Cancel trade</button>
+          </div>
+        </form>
+        </div>
+      </div>
+    </div>
 
     <!-- Confirm Modal -->
-            <div class="modal fade" id="confirmTransactionModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-              <div style="max-width: 38%" class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLongTitle">Confirm this trade?</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                    {% if user.id == object.trade_one.user_who_posted_id %} <!--current user is the one who created the transaction-->
-                      <div class="modal-body">
-                          <p>This trade is:</p>
-                        <span>- Your copy of: <b>{{ object.trade_one.owned_game }}</b>({{ object.trade_one.owned_game.platform }})<br /></span>
-                        <span>- For {{ object.trade_two.user_who_posted }}'s copy of: <b>{{ object.trade_two.owned_game }}</b>({{ object.trade_two.owned_game.platform }})</span> <br />
-                      </div>
-                    {% endif %}
-                    {% if user.id == object.trade_two.user_who_posted_id %} <!--current user is the user the one that needs to confirm the transaction-->
-                      <div class="modal-body">
-                          <p>This trade is:</p>
-                        <span>- Your copy of: <b>{{ object.trade_two.owned_game }}</b>({{ object.trade_two.owned_game.platform }})<br /></span>
-                        <span>- For {{ object.trade_one.user_who_posted }}'s copy of: <b>{{ object.trade_one.owned_game }}</b>({{ object.trade_one.owned_game.platform }})</span> <br />
-                      </div>
-                    {% endif %}
-                <form action="{% url 'confirmed-trade-open' %}" method="post">
-                    {% csrf_token %}
-                    <input type="hidden" value="{{ object.id }}" name="transaction_id">
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
-                    <button type="submit" class="btn btn-primary">Confirm trade and open chat</button>
-                  </div>
-                </form>
-                </div>
-              </div>
-            </div>
+    <div class="modal fade" id="confirmTransactionModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div style="max-width: 38%" class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Confirm this trade?</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+            <div class="modal-body">
+             <!--trade_one and trade_two are trading-->
+              {% if transaction.price is None %}
+                    <div>
+                        <p><u>This trade is:</u></p>
+                        <span>- <u>{{ object.trade_one.user_who_posted|truncatechars:26 }}</u>'s copy of
+                            <b>{{ object.trade_one.owned_game }}</b>({{ object.trade_one.owned_game.platform }}). Disc condition: {{ object.trade_one.condition }} <br /></span>
+                          <span>- For <u>{{ object.trade_two.user_who_posted|truncatechars:26 }}</u>'s copy of:
+                              <b>{{ object.trade_two.owned_game }}</b>({{ object.trade_two.owned_game.platform }}). Disc condition: {{ object.trade_two.condition }}</span> <br />
+                    </div>
+                {% endif %}
+
+              <!--trade_one is buying from trade_two-->
+              {% if object.trade_one.buy_price != None and object.trade_two.sell_price != None and object.trade_two.owned_game != None %}
+              <p><u>Details:</u></p>
+              <span><u>{{ object.trade_two.user_who_posted|truncatechars:26 }}</u> is selling
+                  <b>{{ object.trade_one.desired_game }}</b>({{ object.trade_one.desired_game.platform }}) to <u>{{ object.trade_one.user_who_posted|truncatechars:26 }}</u> for
+                  <b>${{ object.price }}</b> </span> <br />
+              {% endif %}
+
+            <!--trade_two is buying from trade_one-->
+              {% if object.trade_two.buy_price != None and object.trade_one.sell_price != None and object.trade_one.owned_game != None %}
+              <p><u>Details:</u></p>
+              <span><u>{{ object.trade_one.user_who_posted|truncatechars:26 }}</u> is selling
+                  <b>{{ object.trade_two.desired_game }}</b>({{ object.trade_two.desired_game.platform }}) to <u>{{ object.trade_two.user_who_posted|truncatechars:26 }}</u> for
+                  <b>${{ object.price }}</b> </span> <br />
+              {% endif %}
+          </div>
+        <form action="{% url 'confirmed-trade-open' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" value="{{ object.id }}" name="transaction_id">
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
+            <button type="submit" class="post-button btn btn-primary">Confirm trade</button>
+          </div>
+        </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complete Modal -->
+    <div class="modal fade" id="completeTransactionModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div style="max-width: 38%" class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Complete this trade?</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <div class="modal-body">
+              <p>This means that the exchange has taken place, and both users have received their desired game.</p>
+          </div>
+
+        <form action="{% url 'confirmed-trade-complete' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" value="{{ object.id }}" name="transaction_id">
+<!--            <input type="hidden" value="true" name="is_completed">-->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
+            <button type="submit" class="post-button btn btn-success">Complete</button>
+          </div>
+        </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- "This trade was not completed" Modal -->
+    <div class="modal fade" id="notCompletedTransactionModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div style="max-width: 38%" class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Flag this trade as incomplete?</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <div class="modal-body">
+              <p><u>{{ object.user_who_completed|truncatechars:26 }}</u> indicated this trade has been completed. If it has not been completed, you can flag
+              it as incomplete. If you would like help resolving this trade, reach out to <a href="#" target="_blank">Support</a>.</p>
+          </div>
+
+        <form action="{% url 'confirmed-trade-flag-incomplete' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" value="{{ object.id }}" name="transaction_id">
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
+            <button type="submit" class="post-button btn btn-danger">Flag as incomplete</button>
+          </div>
+        </form>
+        </div>
+      </div>
+    </div>
+
+
 
     <script>
     $(document).ready(function(){

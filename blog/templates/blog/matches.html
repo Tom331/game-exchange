@@ -1,67 +1,216 @@
 {% extends "blog/base.html" %}
 {% block content %}
-<h1>Your Matches</h1>
-<br />
+    <h1>Your Matches</h1>
+    <br />
 
-<h5>These proposed trades by other users include a game you want for a game that you own</h5>
-<br />
-{% if messages %}
-            {% for message in messages %}
-              <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-              </div>
-            {% endfor %}
-{% endif %}
-    {% for trade in trades %}
-        <article class="media content-section">
-          <div class="media-body">
-            <div class="article-metadata">
-                <small style="padding-right: 10px" class="text-muted"><b>Created By:</b> {{ trade.t2_username }}</small>
-                <small class="text-muted"><b>Created:</b> {{ trade.t2_created_date|date:"M j, Y g:iA" }} PT</small>
-            </div>
-              <span class="article-content"><a href="{% url 'blog-home' }">{{ trade.t2_username }}</a> wants to trade their copy of </span>
-              <span><b>{{ trade.desired_game.name }}</b>({{ trade.desired_game.platform }}) for your copy of </span>
-              <span><b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }})</span> <br />
-             <button style="padding: 5px 15px 5px 15px; margin-top: 10px" data-toggle="modal"
-                     data-target="#confirmTradeModal-{{trade.id}}" class="btn btn-outline-info">Confirm trade
-             </button>
-          </div>
-        </article>
+    <h5>Nearby users who own the game you want, and want the game you own</h5>
 
-        <!-- Modal -->
-        <div class="modal fade" id="confirmTradeModal-{{trade.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-          <div style="max-width: 45%" class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle">Confirm trade</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
+    {% if trades %} <!--If matches query returned trades-->
+        {% if matches_found_within_radius != True %}
+            <br /><div><p><b><u>No matches were found within your Travel Radius, but these were found nearby:</u></b></p></div>
+        {% endif %}
+
+        {% for trade in trades %}
+            <article class="media content-section">
+              <div class="media-body">
+                <div class="article-metadata">
+                    <small style="padding-right: 10px" class="text-muted"><b>Created By:</b> {{ trade.t2_username|truncatechars:26 }}</small>
+                    <small class="text-muted"><b>Created:</b> {{ trade.t2_created_date|date:"M j, Y g:iA" }} PT</small>
+                    <small class="text-muted"><b>ID(REMOVE):</b> {{ trade.id }}</small>
+                    <small class="text-muted"><b>proposed?:</b> {{ trade.is_trade_proposed }}</small>
+                </div>
+
+                  <!--Current user created a Proposed Trade-->
+                  {% if trade.desired_game != None and trade.owned_game != None %}
+                      <div>You matched with <u>{{ trade.t2_username|truncatechars:26 }}</u> for a trade:</div>
+                      <span>- Their copy of <b>{{ trade.desired_game.name }}</b>({{ trade.desired_game.platform }})</span>. Disc condition: {{ trade.t2_condition }}. <br />
+                      <span>- For your copy of <b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }})</span> <br />
+                     <button style="padding: 5px 15px 5px 15px; margin-top: 10px" data-toggle="modal"
+                             data-target="#confirmTradeModal-{{trade.t2_id}}" class="btn btn-outline-info">Commit to trade
+                     </button>
+
+                  <!--Current user created a "Buy" Trade-->
+                  {% elif trade.desired_game != None and trade.buy_price != None and trade.transaction_price != None %}
+                  <div>You matched with <u>{{ trade.t2_username|truncatechars:26 }}</u>:</div>
+                  <span>They will sell you <b>{{ trade.desired_game.name }}</b>({{ trade.desired_game.platform }})
+                        for <b>${{ trade.transaction_price }}</b>. Disc condition: {{ trade.t2_condition }}.</span> <br />
+                    <button style="padding: 5px 15px 5px 15px; margin-top: 10px" data-toggle="modal"
+                         data-target="#confirmBuyModal-{{trade.t2_id}}" class="btn btn-outline-info">Commit to buy
+                    </button>
+
+                  <!--Current user created a "Sell" Trade-->
+                  {% elif trade.owned_game != None and trade.sell_price != None and trade.transaction_price != None %}
+                  <div>You matched with <u>{{ trade.t2_username|truncatechars:26 }}</u>:</div>
+                  <span>They will buy <b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }})
+                        from you for <b>${{ trade.transaction_price }}</b>.</span> <br />
+                    <button style="padding: 5px 15px 5px 15px; margin-top: 10px" data-toggle="modal"
+                         data-target="#confirmSellModal-{{trade.t2_id}}" class="btn btn-outline-info">Commit to sell
+                    </button>
+                  {% endif %}
+
               </div>
-              <div class="modal-body">
-                  <p><b>You are committing to {{ trade.t2_username }} to follow through with this trade.</b></p>
-                  <p>This trade is:</p>
-                <span>- Your copy of: <b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }})<br /></span>
-                <span>- For {{ trade.t2_username }}'s copy of: <b>{{ trade.desired_game.name }}</b>({{ trade.desired_game.platform }})</span> <br /> <br />
-                <p style="margin-left: 1%"><i class="fa fa-info-circle" aria-hidden="true"></i> You will have 3 <a href="#" target="_blank">
-                    trade confirmations</a> available after confirming this trade</p>
+            </article>
+
+            <!-- Trade Modal -->
+            <div class="modal fade" id="confirmTradeModal-{{trade.t2_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div style="max-width: 45%" class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Confirm trade</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                      <p><b>You are committing to <u>{{ trade.t2_username|truncatechars:26 }}</u> to follow through with this trade.</b></p>
+                      <p>This trade is:</p>
+                    <span>- Your copy of: <b>{{ trade.owned_game.name }}</b>({{ trade.owned_game.platform }})<br /></span>
+                    <span>- For <u>{{ trade.t2_username|truncatechars:26 }}</u>'s copy of: <b>{{ trade.desired_game.name }}</b>({{ trade.desired_game.platform }})</span> <br /> <br />
+
+                      {% if num_trades_remaining == 1 %}
+                      <p style="margin-left: 1%"><i class="fa fa-info-circle" aria-hidden="true"></i> You will be allowed <b>{{ num_trades_remaining }}</b> more
+                          <a href="{% url 'blog-confirmed-trades' %}" target="_blank">Committed Offer</a> after confirming until others are completed or cancelled</p>
+                      {% elif num_trades_remaining == 0 %}
+                        <p style="margin-left: 1%"><i class="fa fa-info-circle" aria-hidden="true"></i> You will not be able to create any more
+                        <a href="{% url 'blog-confirmed-trades' %}" target="_blank">Committed Offer</a> after confirming until others are completed or cancelled.</p>
+                      {% elif num_trades_remaining >= 2 %}
+                        <p style="margin-left: 1%"><i class="fa fa-info-circle" aria-hidden="true"></i> You will be allowed <b>{{ num_trades_remaining }}</b> more
+                        <a href="{% url 'blog-confirmed-trades' %}" target="_blank">Committed Offer</a> after confirming until others are completed or cancelled</p>
+                      {% else %}
+                          <p style="text-align: center"><i class="fa fa-info-circle" aria-hidden="true"></i> <b>Users with a free membership can only have 3 Committed
+                              Trades in progress at a time.</b> <br />
+                          <div style="text-align: center"><a href="#"><b>Upgrade for $3.49 /month.</b></a></div></p>
+                      {% endif %}
+
+                  </div>
+                <form action="{% url 'trade-confirm' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" value="{{ trade.id }}" name="trade_1_id">
+                    <input type="hidden" value="{{ trade.t2_id }}" name="trade_2_id">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+                        {% if more_trades_allowed == True %}
+                            <button type="submit" class="post-button btn btn-primary">Confirm trade</button>
+                        {% else %}
+                            <button disabled type="submit" class="post-button btn btn-primary disabled">Confirm trade</button>
+                        {% endif %}
+                  </div>
+                </form>
+                </div>
               </div>
-            <form action="{% url 'trade-confirm' %}" method="post">
-                {% csrf_token %}
-                <input type="hidden" value="{{ trade.id }}" name="trade_1_id">
-                <input type="hidden" value="{{ trade.t2_id }}" name="trade_2_id">
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Confirm trade</button>
-              </div>
-            </form>
             </div>
-          </div>
-        </div>
-    {% endfor %}
+
+
+            <!-- Buy Modal -->
+            <div class="modal fade" id="confirmBuyModal-{{trade.t2_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div style="max-width: 45%" class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Commit to Buy</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                      <p><b>You are committing to <u>{{ trade.t2_username|truncatechars:26 }}</u> to buy
+                      {{ trade.desired_game.name }}({{ trade.desired_game.platform }}) for ${{ trade.transaction_price }} </b></p>
+
+                      {% if num_trades_remaining == 1 %}
+                      <p style="margin-left: 1%"><i class="fa fa-info-circle" aria-hidden="true"></i> You will be allowed <b>{{ num_trades_remaining }}</b> more
+                          <a href="{% url 'blog-confirmed-trades' %}" target="_blank">Committed Offer</a> after confirming until others are completed or cancelled</p>
+                      {% elif num_trades_remaining == 0 %}
+                        <p style="margin-left: 1%"><i class="fa fa-info-circle" aria-hidden="true"></i> You will not be able to create any more
+                        <a href="{% url 'blog-confirmed-trades' %}" target="_blank">Committed Offers</a> after confirming this trade until others are completed or cancelled.</p>
+                      {% elif num_trades_remaining >= 2 %}
+                        <p style="margin-left: 1%"><i class="fa fa-info-circle" aria-hidden="true"></i> You will be allowed <b>{{ num_trades_remaining }}</b> more
+                        <a href="{% url 'blog-confirmed-trades' %}" target="_blank">Committed Offers</a> after confirming until others are completed or cancelled</p>
+                      {% else %}
+                          <p style="text-align: center"><i class="fa fa-info-circle" aria-hidden="true"></i> <b>Users with a free membership can only have 2 Committed
+                              Offers in progress at a time.</b> <br />
+                          <div style="text-align: center"><a href="#"><b>Upgrade for $3.49 /month.</b></a></div></p>
+                      {% endif %}
+
+                  </div>
+                <form action="{% url 'trade-confirm' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" value="{{ trade.id }}" name="trade_1_id">
+                    <input type="hidden" value="{{ trade.t2_id }}" name="trade_2_id">
+                    <input type="hidden" value="{{ trade.transaction_price }}" name="transaction_price">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+                        {% if more_trades_allowed == True %}
+                            <button type="submit" class="post-button btn btn-primary">Commit to buy</button>
+                        {% else %}
+                            <button disabled type="submit" class="post-button btn btn-primary disabled">Commit to buy</button>
+                        {% endif %}
+                  </div>
+                </form>
+                </div>
+              </div>
+            </div>
+
+
+            <!-- Sell Modal -->
+            <div class="modal fade" id="confirmSellModal-{{trade.t2_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div style="max-width: 45%" class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Commit to Sell</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                      <p><b>You are committing to <u>{{ trade.t2_username|truncatechars:26 }}</u> to sell your copy of
+                      {{ trade.owned_game.name }}({{ trade.owned_game.platform }}) for ${{ trade.transaction_price }} </b></p>
+
+                      {% if num_trades_remaining == 1 %}
+                      <p style="margin-left: 1%"><i class="fa fa-info-circle" aria-hidden="true"></i> You will be allowed <b>{{ num_trades_remaining }}</b> more
+                          <a href="{% url 'blog-confirmed-trades' %}" target="_blank">Committed Offer</a> after confirming this trade</p>
+                      {% elif num_trades_remaining == 0 %}
+                        <p style="margin-left: 1%"><i class="fa fa-info-circle" aria-hidden="true"></i> You will not be able to create any more
+                        <a href="{% url 'blog-confirmed-trades' %}" target="_blank">Committed Offers</a> after confirming this trade until others are completed or cancelled.</p>
+                      {% elif num_trades_remaining >= 2 %}
+                        <p style="margin-left: 1%"><i class="fa fa-info-circle" aria-hidden="true"></i> You will be allowed <b>{{ num_trades_remaining }}</b> more
+                        <a href="{% url 'blog-confirmed-trades' %}" target="_blank">Committed Trades</a> after confirming this trade</p>
+                      {% else %}
+                          <p style="text-align: center"><i class="fa fa-info-circle" aria-hidden="true"></i> <b>Users with a free membership can only have 2 Committed
+                              Trades in progress at a time.</b> <br />
+                          <div style="text-align: center"><a href="#"><b>Upgrade for $3.49 /month.</b></a></div></p>
+                      {% endif %}
+
+                  </div>
+                <form action="{% url 'trade-confirm' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" value="{{ trade.id }}" name="trade_1_id">
+                    <input type="hidden" value="{{ trade.t2_id }}" name="trade_2_id">
+                    <input type="hidden" value="{{ trade.transaction_price }}" name="transaction_price">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+                        {% if more_trades_allowed == True %}
+                            <button type="submit" class="post-button btn btn-primary">Commit to sell</button>
+                        {% else %}
+                            <button disabled type="submit" class="post-button btn btn-primary disabled">Commit to sell</button>
+                        {% endif %}
+                  </div>
+                </form>
+                </div>
+              </div>
+            </div>
+
+
+
+        {% endfor %}
+
+    {% else %}
+        <br /><div><p>You currently do not have any matches. Have other games you're willing to trade? <a href="{% url 'trade-create' %}">Propose a trade</a>.</p></div>
+    {% endif %}
+
 
     {% if is_paginated %}
-
       {% if page_obj.has_previous %}
         <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
         <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}">Previous</a>
@@ -79,6 +228,8 @@
         <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">Next</a>
         <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
       {% endif %}
-
     {% endif %}
+
+    <br />
+    <div><p>Don't see a match you saw previously? The other user may have confirmed it, check the <a href="{% url 'blog-confirmed-trades' %}">Committed Offers page</a>.</p></div>
 {% endblock content %}

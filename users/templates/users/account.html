@@ -1,0 +1,115 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+    <div class="content-section">
+      <div class="media">
+        <div class="media-body">
+          <h2 class="account-heading">{{ user.username|truncatechars:26 }}</h2>
+          <p class="text-secondary">{{ user.email }}</p>
+        </div>
+      </div>
+      <form id="update-account-form" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+
+
+          <fieldset class="form-group">
+              <legend class="border-bottom mb-4">Account</legend>
+              {{ u_form|crispy }}
+          </fieldset>
+
+          <h4 style="text-align: center;">Update Your Location or Travel Radius</h4>
+          <p style="text-align: center; font-size: 80%;" class="text-muted">
+              You will only see matches with users who are willing to come to your Travel Radius</p>
+
+          <!-- MAP -->
+        <div style="height:300px;">
+            <div style="display: none;">
+              <input style="margin-left: 20%"
+                id="pac-input"
+                class="controls"
+                type="text"
+                placeholder="Enter your City or Postal Code"
+              />
+            </div>
+
+            <div id="map" style="height=100%;">map here</div>
+            <div id="infowindow-content">
+              <span id="place-address"></span>
+            </div>
+        </div> <br />
+        <!-- end MAP -->
+
+          <div id="location-section">
+            <div>Your Location:
+                <span id="your-location-value"></span>
+            </div>
+            <h6 class="fa fa-info-circle" data-toggle="tooltip" data-original-title="How far are you willing to travel to meet for a trade?"></h6>
+            <span class="form-group">Travel Radius:
+                <input id="travel-radius" style="width: 50px; font-weight: bold;" type="number" /> <!--hardcode-->
+                <b>Kilometers</b>
+            </span>
+        </div>
+        <br />
+
+          <input type="hidden" id="user_id" name="variable" value="{{ user.id }}">
+<!--          <input type="hidden" id="user_lat" name="variable" value="{{ user.lat }}">-->
+<!--          <input type="hidden" id="user_long" name="variable" value="{{ user.long }}">-->
+<!--          <input type="hidden" id="user_travel_radius" name="variable" value="{{ user.travel_radius }}">-->
+          <div class="form-group">
+              <button onclick="updateUser()" class="btn btn-outline-info" type="submit">Update</button>
+          </div> <br />
+      </form>
+
+      <button data-toggle="modal" data-target="#deleteAccountModal" class="btn btn-outline-danger">Delete Account</button>
+    </div>
+
+    <!-- Modal -->
+        <div class="modal fade" id="deleteAccountModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+          <div style="max-width: 38%" class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Are you sure you want to delete your account?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+                <div class="modal-body">
+                    <p>This cannot be undone.</p>
+                </div>
+            <form action="{% url 'user-delete' %}" method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <input type="hidden" value="{{ user.id }}" name="user_id">
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="post-button btn btn-danger">Delete Account</button>
+              </div>
+            </form>
+            </div>
+          </div>
+        </div>
+
+    <script src="{% static 'googleMapsUpdateUser.js' %}"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAZ8ih7kp-wzaVnKt1Bn19ZnWRDIJ8UiQQ&callback=initMap&libraries=places&v=weekly" async></script>
+
+    <script>
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip({
+            placement : 'top'
+        });
+    });
+    </script>
+    <style>
+        .bs-example{
+            margin: 50px;
+        }
+        .bs-example a{
+            font-size: 22px;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+    </style>
+
+
+{% endblock content %}

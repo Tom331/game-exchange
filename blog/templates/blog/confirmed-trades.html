@@ -1,18 +1,11 @@
 {% extends "blog/base.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-<h1>Your Confirmed Trades</h1>
+<h1>Your "In Progress" Committed Offers</h1>
 <br />
 
-<h5>These trades include a game you want for a game that you own, where either you or the other user have confirmed to go through with the trade</h5>
+<h5>These are matches where either you or the other user have confirmed to follow through with the trade</h5>
 <br />
-{% if messages %}
-            {% for message in messages %}
-              <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-              </div>
-            {% endfor %}
-{% endif %}
 
     {% for transaction in transactions %}
         <article class="media content-section">
@@ -22,30 +15,37 @@
                 <small class="text-muted"><b>id(REMOVE):</b> {{ transaction.id }}</small>
             </div>
 
-            {% if user.id == transaction.trade_one.user_who_posted_id %} <!--current user is the one who created the transaction-->
-              <span class="article-content">Your copy of </span>
-              <span><b>{{ transaction.trade_one.owned_game.name }}</b>({{ transaction.trade_one.owned_game.platform }}) </span>
-              <span>for {{ transaction.trade_two.user_who_posted }}'s copy of
-                  <b>{{ transaction.trade_one.desired_game.name }}</b>({{ transaction.trade_one.desired_game.platform }})</span>
+            {% if transaction.price is None %} <!--trade_one and trade_two are trading-->
+                  <span class="article-content"><u>{{ transaction.trade_one.user_who_posted|truncatechars:26 }}</u> is trading with <u>{{ transaction.trade_two.user_who_posted|truncatechars:26 }}</u>:</span> <br />
+                  <span>- <u>{{ transaction.trade_one.user_who_posted|truncatechars:26 }}</u>'s copy of
+                        <b>{{ transaction.trade_one.owned_game.name }}</b>({{ transaction.trade_one.owned_game.platform }})</span> <br />
+                  <span>- For <u>{{ transaction.trade_two.user_who_posted|truncatechars:26 }}</u>'s copy of
+                        <b>{{ transaction.trade_two.owned_game.name }}</b>({{ transaction.trade_two.owned_game.platform }})</span></span>
+
             {% endif %}
 
-            {% if user.id == transaction.trade_two.user_who_posted_id %} <!--current user is the 2nd to confirm the transaction-->
-               <span class="article-content">Your copy of </span>
-               <span><b>{{ transaction.trade_two.owned_game.name }}</b>({{ transaction.trade_two.owned_game.platform }}) </span>
-               <span>for {{ transaction.trade_one.user_who_posted }}'s copy of
-               <b>{{ transaction.trade_two.desired_game.name }}</b>({{ transaction.trade_two.desired_game.platform }})</span>
-            {% endif %}
+              <!--trade_one is buying from trade_two-->
+              {% if transaction.trade_one.buy_price != None and transaction.trade_two.sell_price != None and transaction.trade_two.owned_game != None %}
+              <span><u>{{ transaction.trade_two.user_who_posted|truncatechars:26 }}</u> is selling
+                  <b>{{ transaction.trade_one.desired_game }}</b>({{ transaction.trade_one.desired_game.platform }}) to <u>{{ transaction.trade_one.user_who_posted|truncatechars:26 }}</u> for
+                  <b>${{ transaction.price }}</b> </span>
+              {% endif %}
+
+              <!--trade_two is buying from trade_one-->
+              {% if transaction.trade_two.buy_price != None and transaction.trade_one.sell_price != None and transaction.trade_one.owned_game != None %}
+              <span><u>{{ transaction.trade_one.user_who_posted|truncatechars:26 }}</u> is selling
+                  <b>{{ transaction.trade_two.desired_game }}</b>({{ transaction.trade_two.desired_game.platform }}) to <u>{{ transaction.trade_two.user_who_posted|truncatechars:26 }}</u> for
+                  <b>${{ transaction.price }}</b> </span>
+              {% endif %}
+
 
             <br /> <br />
-            <h6><u>Current Status:</u> {{ transaction.status }}</h6>
+            <h6><u>Current Status:</u> {{ transaction.status }}</h6> <!--hardcode-->
             <a href="{% url 'confirmed-trade' transaction.id %}"
-               style="padding: 5px 15px 5px 15px; margin-top: 10px"  class="btn btn-outline-primary">Open trade</a>
+               style="padding: 5px 15px 5px 15px; margin-top: 10px"  class="btn btn-outline-primary">Open offer</a>
           </div>
         </article>
-
     {% endfor %}
-
-    <p>Don't see a trade you confirmed? It may have been cancelled. Check your <a href="{% url 'blog-cancelled-trades' %}"><u>Cancelled Trades</u></a></p>
 
 
     {% if is_paginated %}
@@ -69,4 +69,5 @@
       {% endif %}
 
     {% endif %}
+    <div><p>Don't see a trade you confirmed? It may have been cancelled. Check your <a href="{% url 'blog-cancelled-trades' %}">Cancelled Trades</a></p></div>
 {% endblock content %}

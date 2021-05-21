@@ -1,4 +1,4 @@
-print('~~~\n\nvery top in blog/models.py\n\n~~~')
+print('~~~\n\nvery top in blog/admin.py\n\n~~~')
 
 from django.contrib import admin
 from .models import Post, Game, Trade, Transaction
@@ -9,3 +9,5 @@ admin.site.register(Post)
 admin.site.register(Game)
 admin.site.register(Trade)
 admin.site.register(Transaction)
+
+print('~~~bottom of blog/admin.py~~~')
