@@ -1,0 +1,106 @@
+{% extends 'blog/base.html' %}
+
+    {% load static %}
+
+    {% block sidebar %}
+        <!--hardcode-->
+        {% if user.id != object.trade_one.user_who_posted_id and user.id != object.trade_two.user_who_posted_id and user.id != 1 %}
+            <div></div>
+        {% else %}
+
+        {% if 'Open' in object.status or 'Waiting for 2nd' in object.status or 'Completed by' in object.status and object.status != 'Completed by both users' %} <!--hardcode-->
+           <h2 style="text-align: center;">Chat</h2>
+            <!-- <p style="text-align: center; color: grey; font-style: italic;"><small>Chat may be monitored - please be respectful</small></p>-->
+            <div style="height: 40%; min-height: 30px;" class="messages">
+                <div id="scroller" style="height: 250px; border-style: solid;  border-width: 1px;overflow: auto; padding: 5px 5px 5px 5px">
+                    <ul style="padding-left: 0px" id="chat-log">
+                    </ul>
+                    <div id="anchor"></div>
+                </div>
+            </div>
+            <br />
+
+            <div class="message-input">
+                <div class="wrap">
+                    <input style="width: 80% !important; border-style: solid; border-width: 3px; border-color: black;"
+                           id="chat-message-input" type="text" placeholder="Write your message..." />
+                    <button id="chat-message-submit" class="submit">
+                    <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <br /> <hr />
+        {% else %} {% endif %}
+
+
+
+        <script src="{% static 'reconnecting_websockets.js' %}"></script>
+        <script>
+            // {# var roomName = {{ room_name_json }}; #}
+            var roomName = {{ object.id }}
+            var username = "{{ user }}";
+
+            //only initialize var if status = 'open' and current user = user1, user2 or admin
+            var chatSocket = new ReconnectingWebSocket(
+                'ws://' + window.location.host +
+                '/ws/chat/' + roomName + '/');
+
+            //only call if status = 'open' and current user = user1, user2 or admin (may be taken care of by above)
+            chatSocket.onopen = function(e) {
+              fetchMessages();
+            }
+
+            chatSocket.onmessage = function(e) {
+                var data = JSON.parse(e.data);
+                if (data['command'] === 'messages') {
+                  for ( i = data['messages'].length-1; i>=0; i--) {
+                    createMessage(data['messages'][i]);
+                  }
+                } else if (data['command'] === 'new_message'){
+                  createMessage(data['message']);
+                }
+            };
+
+            chatSocket.onclose = function(e) {
+                console.error('Chat socket closed unexpectedly');
+            };
+
+            document.querySelector('#chat-message-input').onkeyup = function(e) {
+                if (e.keyCode === 13) {  // enter, return
+                    document.querySelector('#chat-message-submit').click();
+                }
+            };
+
+            document.querySelector('#chat-message-submit').onclick = function(e) {
+                var messageInputDom = document.getElementById('chat-message-input');
+                var message = messageInputDom.value;
+                chatSocket.send(JSON.stringify({
+                    'command': 'new_message',
+                    'message': message,
+                    'from': username,
+                    'transaction_id': {{ object.id }}
+                }));
+
+                messageInputDom.value = '';
+            };
+
+            function fetchMessages() {
+              chatSocket.send(JSON.stringify({
+                'command': 'fetch_messages',
+                'transaction_id': {{ object.id }}
+              }));
+            }
+
+            function createMessage(data) {
+              var author = data['author'];
+              document.getElementById('chat-log').innerHTML += '<b>' + author + '</b>: ' + data.content + '<br />';
+            }
+
+        </script>
+    {% endif %}
+
+{% endblock %}
+
+
+
+

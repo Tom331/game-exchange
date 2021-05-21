@@ -1,0 +1,70 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<h1>Your Cancelled Trades</h1>
+<br />
+
+<h5>These trades were confirmed by you or another user, but were cancelled</h5>
+<br />
+
+    {% for transaction in transactions %}
+        <article class="media content-section">
+          <div class="media-body">
+            <div class="article-metadata">
+                <small class="text-muted"><b>Created:</b> {{ transaction.created_date|date:"M j, Y g:iA" }} PT</small>
+                <small class="text-muted"><b>id(REMOVE):</b> {{ transaction.id }}</small>
+            </div>
+
+            <!--trade_one and trade_two are trading-->
+              {% if transaction.price is None %}
+                  <span class="article-content"><u>{{ transaction.trade_one.user_who_posted|truncatechars:26 }}</u> is trading with <u>{{ transaction.trade_two.user_who_posted|truncatechars:26 }}</u>:</span> <br />
+                  <span>- <u>{{ transaction.trade_one.user_who_posted|truncatechars:26 }}</u>'s copy of
+                        <b>{{ transaction.trade_one.owned_game.name }}</b>({{ transaction.trade_one.owned_game.platform }})</span> <br />
+                  <span>- For <u>{{ transaction.trade_two.user_who_posted|truncatechars:26 }}</u>'s copy of
+                        <b>{{ transaction.trade_two.owned_game.name }}</b>({{ transaction.trade_two.owned_game.platform }})</span></span>
+              {% endif %}
+
+            <!--trade_one is buying from trade_two-->
+              {% if transaction.trade_one.buy_price != None and transaction.trade_two.sell_price != None and transaction.trade_two.owned_game != None %}
+              <span><u>{{ transaction.trade_two.user_who_posted|truncatechars:26 }}</u> is selling
+                  <b>{{ transaction.trade_one.desired_game }}</b>({{ transaction.trade_one.desired_game.platform }}) to <u>{{ transaction.trade_one.user_who_posted|truncatechars:26 }}</u> for
+                  <b>${{ transaction.price }}</b> </span>
+              {% endif %}
+
+            <!--trade_two is buying from trade_one-->
+              {% if transaction.trade_two.buy_price != None and transaction.trade_one.sell_price != None and transaction.trade_one.owned_game != None %}
+              <span><u>{{ transaction.trade_one.user_who_posted|truncatechars:26 }}</u> is selling
+                  <b>{{ transaction.trade_two.desired_game }}</b>({{ transaction.trade_two.desired_game.platform }}) to <u>{{ transaction.trade_two.user_who_posted|truncatechars:26 }}</u> for
+                  <b>${{ transaction.price }}</b> </span>
+              {% endif %}
+
+            <br /> <br />
+            <h6><u>Current Status:</u> {{ transaction.status }} on {{ transaction.user_cancelled_date|date:"M j, Y g:iA" }}</h6>
+          </div>
+        </article>
+
+    {% endfor %}
+
+
+    {% if is_paginated %}
+
+      {% if page_obj.has_previous %}
+        <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">Next</a>
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+      {% endif %}
+
+    {% endif %}
+{% endblock content %}

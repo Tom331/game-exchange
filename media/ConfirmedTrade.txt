@@ -1,0 +1,16 @@
+Hi {{ username }},
+
+A nearby user wants to follow through with a trade you proposed. The trade is:
+
+- Your copy of {{ owned_game }}({{ owned_game_platform }})
+- For another user's copy of {{ desired_game }}({{ desired_game_platform }})
+
+To arrange a meetup, go to this link: {{ transaction_url }}
+
+Happy trading,
+
+The Game Exchange team
+
+
+If you would like to unsubscribe from these emails, click the link below:
+{{ opt_out_url }}

@@ -1,0 +1,17 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Resend Email Confirmation</legend>
+                {{ form|crispy }}
+            </fieldset>
+            <div class="form-group">
+                <button class="post-button btn btn-outline-info" type="submit">Resend Email</button>
+            </div>
+            <p style="font-size: 80%;" class="text-muted">If you forget the email you used, check your <a href="{% url 'account' %}">Account</a> page</p>
+        </form>
+    </div>
+{% endblock content %}

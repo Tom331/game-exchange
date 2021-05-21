@@ -1,0 +1,12 @@
+Hi {{ username }},
+
+You recently requested a new activation email. If this was not you please ignore this email.
+
+You can confirm your email by visiting the link below:
+
+{{ activation_link }}
+
+Happy trading,
+
+The Game Exchange team
+
